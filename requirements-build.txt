@@ -1,0 +1,7 @@
+numpy==2.3.5
+Pillow==12.3.0
+rawpy==0.27.1
+PySide6-Essentials==6.12.0
+shiboken6==6.12.0
+PyInstaller==6.22.3
+pyinstaller-hooks-contrib==2026.9

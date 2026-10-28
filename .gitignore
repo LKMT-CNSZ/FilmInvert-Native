@@ -218,3 +218,27 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# FilmInvert local state, private data, downloaded runtimes and generated releases
+/runtime/
+/vendor/
+/dist/
+/release/
+/validation/
+/data/
+/out/
+!/build/
+/build/*
+!/build/compat-dependencies.json
+!/build/installer-dependencies.json
+__pycache__/
+*.py[cod]
+*.log
+*.lnk
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+.env
+.env.*
+*.filmbackup
+*.filmtransfer
