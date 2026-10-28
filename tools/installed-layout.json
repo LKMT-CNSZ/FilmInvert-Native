@@ -1,0 +1,7 @@
+{
+  "format": "film-invert-installed-runtime",
+  "version": "3.0.1",
+  "profile": "%LOCALAPPDATA%/FilmInvertNative/data",
+  "default_output": "%LOCALAPPDATA%/FilmInvertNative/exports",
+  "uninstall_preserves_user_data": true
+}

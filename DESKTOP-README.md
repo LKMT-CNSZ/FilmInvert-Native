@@ -1,4 +1,6 @@
-# FilmInvert Native 3.0.0 · Windows x64 正式版
+# FilmInvert Native 3.0.1 · Windows x64
+
+新增简体中文 / English 界面，主工具栏或「视图 → Language / 语言」即时切换并记住选择。英文介绍见 `README.en.md` / `README.en.html`，英文帮助菜单打开英文说明。切换保留当前编辑、批次和任务；用户文字保持原文。
 
 FilmInvert Native 是本机胶片反相和整卷/批次修片工具，采用黑白灰“暗房”原生 Qt 界面。完整介绍、格式边界与上手流程请打开根目录「软件介绍.html」或「软件介绍.md」。菜单「帮助 → 打开使用说明」打开易读的 HTML 介绍。
 

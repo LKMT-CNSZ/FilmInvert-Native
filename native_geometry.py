@@ -1,4 +1,5 @@
 """Modal non-destructive crop, quarter-turn and straightening workbench."""
+from i18n import tr as _t, trf as _tf, ui as _ui
 import numpy as np
 from PySide6.QtCore import Qt, Signal, QPointF, QRectF, QTimer
 from PySide6.QtGui import QColor, QPen, QPolygonF, QPainterPath
@@ -13,7 +14,7 @@ class CropCanvas(ImageCanvas):
 
     def __init__(self):
         super().__init__()
-        self.setAccessibleName('裁切画布：拖动角点缩放，框内移动，框外重新框选')
+        _ui(self.setAccessibleName, _t('裁切画布：拖动角点缩放，框内移动，框外重新框选'))
         self.setDragMode(ImageCanvas.DragMode.NoDrag)
         self.setAcceptDrops(False)
         self.crop = geometry.FULL.copy()
@@ -155,7 +156,7 @@ class MultiLineCanvas(LineCanvas):
     def __init__(self):
         super().__init__();self.reference_lines=[];self.selected_line=-1
         self.new_axis='horizontal';self.invalid_lines=set()
-        self.setAccessibleName('多参考线校直：空白处拖动添加，点击线段选中，拖动端点调整')
+        _ui(self.setAccessibleName, _t('多参考线校直：空白处拖动添加，点击线段选中，拖动端点调整'))
 
     def select_line(self,index):
         self.selected_line=index if 0<=index<len(self.reference_lines) else -1
@@ -205,9 +206,9 @@ class MultiLineCanvas(LineCanvas):
             painter.setBrush(color);radius=(5 if i==self.selected_line else 3)/scale
             for point in points:painter.drawEllipse(point,radius,radius)
             middle=(points[0]+points[1])/2
-            label=f'{i+1} '+('H' if row['axis']=='horizontal' else 'V')+(' !' if i in self.invalid_lines else '')
-            painter.drawText(middle+QPointF(7/scale,-5/scale),label)
-            painter.setPen(color);painter.drawText(middle+QPointF(6/scale,-6/scale),label)
+            label=_tf('{0} ', i+1)+('H' if row['axis']=='horizontal' else 'V')+(' !' if i in self.invalid_lines else '')
+            _ui(painter.drawText, middle+QPointF(7/scale,-5/scale),label)
+            painter.setPen(color);_ui(painter.drawText, middle+QPointF(6/scale,-6/scale),label)
 
 
 class PerspectiveCanvas(MultiLineCanvas):
@@ -253,11 +254,11 @@ class PerspectiveCanvas(MultiLineCanvas):
                     painter.drawLine(QPointF(*a),QPointF(*b))
         font=painter.font();font.setPixelSize(max(1,round(14/scale)));painter.setFont(font)
         painter.setBrush(color)
-        for label,point in zip(('左上','右上','右下','左下'),points):
+        for label,point in zip((_t('左上'),_t('右上'),_t('右下'),_t('左下')),points):
             painter.drawEllipse(point,6/scale,6/scale)
             dx=8/scale if point.x()<bounds.width()/2 else -40/scale
             dy=19/scale if point.y()<bounds.height()/2 else -10/scale
-            painter.drawText(point+QPointF(dx,dy),label)
+            _ui(painter.drawText, point+QPointF(dx,dy),label)
 
 
 class GeometryDialog(QDialog):
@@ -265,7 +266,7 @@ class GeometryDialog(QDialog):
 
     def __init__(self,preview,value,parent=None):
         super().__init__(parent)
-        self.setWindowTitle('裁切、校直与透视 · 无损编辑');self.setModal(True)
+        _ui(self.setWindowTitle, _t('裁切、校直与透视 · 无损编辑'));self.setModal(True)
         self.resize(1100,850);self.setMinimumSize(850,650)
         self.preview = preview
         turns,angle,crop = geometry.settings(value)
@@ -274,71 +275,71 @@ class GeometryDialog(QDialog):
         if spec is not None:self.value['perspective']=spec
         self.syncing = False
         layout = QVBoxLayout(self)
-        intro = QLabel('拖动角点调整裁切，框内拖动移动，框外拖动重选。拉直自动收去空边；应用后可撤销，原图保持完整。')
+        intro = _ui(QLabel, _t('拖动角点调整裁切，框内拖动移动，框外拖动重选。拉直自动收去空边；应用后可撤销，原图保持完整。'))
         intro.setWordWrap(True);layout.addWidget(intro)
         split=QSplitter();self.canvas = PerspectiveCanvas();split.addWidget(self.canvas)
         if spec is not None:self.canvas.quad=[p.copy() for p in spec['points']]
-        self.result_canvas=ImageCanvas();self.result_canvas.setAccessibleName('画线校直实时结果预览')
+        self.result_canvas=ImageCanvas();_ui(self.result_canvas.setAccessibleName, _t('画线校直实时结果预览'))
         split.addWidget(self.result_canvas);self.result_canvas.hide();split.setSizes([740,360]);layout.addWidget(split,1)
         self.timer = QTimer(self);self.timer.setSingleShot(True);self.timer.setInterval(80);self.timer.timeout.connect(self.refresh)
         row = QHBoxLayout()
-        for text,step in (('左转 90°',-90),('右转 90°',90)):
-            button = QPushButton(text);button.clicked.connect(lambda _,s=step:self.turn(s));row.addWidget(button)
-        self.rotation_label = QLabel();row.addWidget(self.rotation_label)
-        row.addStretch();row.addWidget(QLabel('裁切比例'))
-        self.ratios = QComboBox();self.ratios.setAccessibleName('裁切比例')
-        for title,ratio in [('自由',None),('原始比例','original'),('1 : 1',1.),('3 : 2',1.5),('2 : 3',2/3),
+        for text,step in ((_t('左转 90°'),-90),(_t('右转 90°'),90)):
+            button = _ui(QPushButton, text);button.clicked.connect(lambda _,s=step:self.turn(s));row.addWidget(button)
+        self.rotation_label = _ui(QLabel);row.addWidget(self.rotation_label)
+        row.addStretch();row.addWidget(_ui(QLabel, _t('裁切比例')))
+        self.ratios = QComboBox();_ui(self.ratios.setAccessibleName, _t('裁切比例'))
+        for title,ratio in [(_t('自由'),None),(_t('原始比例'),'original'),('1 : 1',1.),('3 : 2',1.5),('2 : 3',2/3),
                             ('4 : 3',4/3),('3 : 4',.75),('16 : 9',16/9),('9 : 16',9/16)]:
-            self.ratios.addItem(title,ratio)
+            _ui(self.ratios.addItem, title,ratio)
         self.ratios.currentIndexChanged.connect(self.ratio_changed);row.addWidget(self.ratios)
-        reset = QPushButton('重置几何');reset.clicked.connect(self.reset_geometry);row.addWidget(reset);layout.addLayout(row)
-        self.angle = ParameterRow('拉直角度','straighten',-15,15,.05,angle)
-        self.angle.spin.setSuffix('°');self.angle.changed.connect(self.angle_changed);layout.addWidget(self.angle)
-        row=QHBoxLayout();self.line_button=QPushButton('画线校直');self.line_button.setCheckable(True)
-        self.line_button.setAccessibleName('画线校直');self.line_button.toggled.connect(self.toggle_line);row.addWidget(self.line_button)
-        self.line_axis=QComboBox();self.line_axis.setAccessibleName('校直参考方向')
-        self.line_axis.addItem('设为水平','horizontal');self.line_axis.addItem('设为竖直','vertical')
+        reset = _ui(QPushButton, _t('重置几何'));reset.clicked.connect(self.reset_geometry);row.addWidget(reset);layout.addLayout(row)
+        self.angle = ParameterRow(_t('拉直角度'),'straighten',-15,15,.05,angle)
+        _ui(self.angle.spin.setSuffix, '°');self.angle.changed.connect(self.angle_changed);layout.addWidget(self.angle)
+        row=QHBoxLayout();self.line_button=_ui(QPushButton, _t('画线校直'));self.line_button.setCheckable(True)
+        _ui(self.line_button.setAccessibleName, _t('画线校直'));self.line_button.toggled.connect(self.toggle_line);row.addWidget(self.line_button)
+        self.line_axis=QComboBox();_ui(self.line_axis.setAccessibleName, _t('校直参考方向'))
+        _ui(self.line_axis.addItem, _t('设为水平'),'horizontal');_ui(self.line_axis.addItem, _t('设为竖直'),'vertical')
         self.line_axis.currentIndexChanged.connect(self.line_axis_changed);row.addWidget(self.line_axis)
-        self.grid=QComboBox();self.grid.setAccessibleName('校直辅助网格')
-        for title,divisions in [('三分网格',3),('密集网格',10),('关闭网格',1)]:self.grid.addItem(title,divisions)
+        self.grid=QComboBox();_ui(self.grid.setAccessibleName, _t('校直辅助网格'))
+        for title,divisions in [(_t('三分网格'),3),(_t('密集网格'),10),(_t('关闭网格'),1)]:_ui(self.grid.addItem, title,divisions)
         self.grid.currentIndexChanged.connect(self.change_grid);row.addWidget(self.grid);row.addStretch();layout.addLayout(row)
-        row=QHBoxLayout();row.addWidget(QLabel('参考线'))
-        self.line_list=QComboBox();self.line_list.setAccessibleName('参考线列表');self.line_list.setMinimumWidth(180)
+        row=QHBoxLayout();row.addWidget(_ui(QLabel, _t('参考线')))
+        self.line_list=QComboBox();_ui(self.line_list.setAccessibleName, _t('参考线列表'));self.line_list.setMinimumWidth(180)
         self.line_list.currentIndexChanged.connect(self.canvas.select_line);row.addWidget(self.line_list,1)
-        self.add_line_button=QPushButton('新增参考线');self.add_line_button.clicked.connect(self.add_line);row.addWidget(self.add_line_button)
-        self.delete_line_button=QPushButton('删除选中线');self.delete_line_button.clicked.connect(self.delete_line);row.addWidget(self.delete_line_button)
-        self.clear_lines_button=QPushButton('清空参考线');self.clear_lines_button.clicked.connect(self.clear_lines);row.addWidget(self.clear_lines_button)
+        self.add_line_button=_ui(QPushButton, _t('新增参考线'));self.add_line_button.clicked.connect(self.add_line);row.addWidget(self.add_line_button)
+        self.delete_line_button=_ui(QPushButton, _t('删除选中线'));self.delete_line_button.clicked.connect(self.delete_line);row.addWidget(self.delete_line_button)
+        self.clear_lines_button=_ui(QPushButton, _t('清空参考线'));self.clear_lines_button.clicked.connect(self.clear_lines);row.addWidget(self.clear_lines_button)
         layout.addLayout(row);self.canvas.selectionChanged.connect(self.line_selected)
-        self.line_message=QLabel('左侧空白处拖动可连续添加多条线；每条可设为水平或竖直，按原图线长加权计算角度。右侧实时预览。')
+        self.line_message=_ui(QLabel, _t('左侧空白处拖动可连续添加多条线；每条可设为水平或竖直，按原图线长加权计算角度。右侧实时预览。'))
         self.line_message.setWordWrap(True);layout.addWidget(self.line_message)
         self.canvas.lineChanged.connect(self.line_changed)
-        row=QHBoxLayout();self.perspective_button=QPushButton('四角透视校正');self.perspective_button.setCheckable(True)
+        row=QHBoxLayout();self.perspective_button=_ui(QPushButton, _t('四角透视校正'));self.perspective_button.setCheckable(True)
         self.perspective_button.toggled.connect(self.toggle_perspective);row.addWidget(self.perspective_button)
-        row.addWidget(QLabel('透视输出比例'));self.perspective_ratio=QComboBox();self.perspective_ratio.setAccessibleName('透视输出比例')
-        for title,ratio in [('自动边长',None),('1 : 1',1.),('3 : 2',1.5),('2 : 3',2/3),('4 : 3',4/3),('3 : 4',.75),('16 : 9',16/9),('9 : 16',9/16)]:
-            self.perspective_ratio.addItem(title,ratio)
+        row.addWidget(_ui(QLabel, _t('透视输出比例')));self.perspective_ratio=QComboBox();_ui(self.perspective_ratio.setAccessibleName, _t('透视输出比例'))
+        for title,ratio in [(_t('自动边长'),None),('1 : 1',1.),('3 : 2',1.5),('2 : 3',2/3),('4 : 3',4/3),('3 : 4',.75),('16 : 9',16/9),('9 : 16',9/16)]:
+            _ui(self.perspective_ratio.addItem, title,ratio)
         if spec is not None and spec['ratio'] is not None:
             index=self.perspective_ratio.findData(spec['ratio'])
-            if index<0:self.perspective_ratio.addItem(f'自定 {spec["ratio"]:.4g} : 1',spec['ratio']);index=self.perspective_ratio.count()-1
+            if index<0:_ui(self.perspective_ratio.addItem, _tf('自定 {0:.4g} : 1', spec["ratio"]),spec['ratio']);index=self.perspective_ratio.count()-1
             self.perspective_ratio.setCurrentIndex(index)
         self.perspective_ratio.currentIndexChanged.connect(lambda:self.quad_changed(self.canvas.quad))
         self.perspective_ratio.setEnabled(False)
-        row.addWidget(self.perspective_ratio);self.clear_perspective_button=QPushButton('清除透视')
+        row.addWidget(self.perspective_ratio);self.clear_perspective_button=_ui(QPushButton, _t('清除透视'))
         self.clear_perspective_button.clicked.connect(self.clear_perspective);row.addWidget(self.clear_perspective_button);row.addStretch();layout.addLayout(row)
-        self.perspective_message=QLabel('四角透视：在同一平面上拖动左上、右上、右下、左下四个角，右侧预览拉正结果。')
+        self.perspective_message=_ui(QLabel, _t('四角透视：在同一平面上拖动左上、右上、右下、左下四个角，右侧预览拉正结果。'))
         self.perspective_message.setWordWrap(True);layout.addWidget(self.perspective_message)
         self.canvas.quadChanged.connect(self.quad_changed)
         row = QHBoxLayout();self.edges=[]
-        for title,number in zip(('左 %','上 %','右 %','下 %'),crop):
-            row.addWidget(QLabel(title));spin=QDoubleSpinBox();spin.setRange(0,100);spin.setDecimals(2)
-            spin.setValue(number*100);spin.setKeyboardTracking(False);spin.setAccessibleName('裁切'+title)
+        for title,number in zip((_t('左 %'),_t('上 %'),_t('右 %'),_t('下 %')),crop):
+            row.addWidget(_ui(QLabel, title));spin=QDoubleSpinBox();spin.setRange(0,100);spin.setDecimals(2)
+            spin.setValue(number*100);spin.setKeyboardTracking(False);_ui(spin.setAccessibleName, _t('裁切')+title)
             spin.editingFinished.connect(self.edges_changed);row.addWidget(spin);self.edges.append(spin)
         layout.addLayout(row)
-        self.dimensions = QLabel();self.dimensions.setWordWrap(True);layout.addWidget(self.dimensions)
-        row = QHBoxLayout();self.reset_crop_button=QPushButton('恢复完整画面');self.reset_crop_button.clicked.connect(self.reset_crop)
+        self.dimensions = _ui(QLabel);self.dimensions.setWordWrap(True);layout.addWidget(self.dimensions)
+        row = QHBoxLayout();self.reset_crop_button=_ui(QPushButton, _t('恢复完整画面'));self.reset_crop_button.clicked.connect(self.reset_crop)
         row.addWidget(self.reset_crop_button);row.addStretch()
-        cancel=QPushButton('取消');cancel.clicked.connect(self.reject);row.addWidget(cancel)
-        self.apply_button=QPushButton('应用到当前帧');self.apply_button.setDefault(True);self.apply_button.clicked.connect(self.apply_result);row.addWidget(self.apply_button)
+        cancel=_ui(QPushButton, _t('取消'));cancel.clicked.connect(self.reject);row.addWidget(cancel)
+        self.apply_button=_ui(QPushButton, _t('应用到当前帧'));self.apply_button.setDefault(True);self.apply_button.clicked.connect(self.apply_result);row.addWidget(self.apply_button)
         layout.addLayout(row)
         self.canvas.cropChanged.connect(self.crop_changed)
         self.toggle_line(False)
@@ -353,7 +354,7 @@ class GeometryDialog(QDialog):
 
     def angle_changed(self,value):
         self.value['straighten']=value
-        if self.canvas.reference_lines:self.line_message.setText(f'手动角度 {value:+.2f}°；调整参考线后将重新综合计算。')
+        if self.canvas.reference_lines:_ui(self.line_message.setText, _tf('手动角度 {0:+.2f}°；调整参考线后将重新综合计算。', value))
         self.timer.start()
 
     def refresh(self):
@@ -382,7 +383,7 @@ class GeometryDialog(QDialog):
             shown=display_working(wide,self.preview.get('working_space','srgb'),self.preview.get('monitor'))
             self.canvas.set_pixels((out*255+.5).astype(np.uint8),display=shown)
             self.canvas.set_crop(self.value['crop'])
-        self.rotation_label.setText(f'顺时针 {self.value["rotation"]}°')
+        _ui(self.rotation_label.setText, _tf('顺时针 {0}°', self.value["rotation"]))
         self.update_dimensions()
 
     def toggle_line(self,on):
@@ -406,17 +407,17 @@ class GeometryDialog(QDialog):
             if spec is not None:perspective.matrix(spec['points'])
         except ValueError as error:
             self.canvas.quad_invalid=True;self.apply_button.setEnabled(False);self.timer.stop()
-            self.perspective_message.setText(str(error)+'；请调整角点，右侧保留上次有效结果。');return
+            _ui(self.perspective_message.setText, str(error)+_t('；请调整角点，右侧保留上次有效结果。'));return
         self.canvas.quad_invalid=False;self.apply_button.setEnabled(True)
         if spec is None:self.value.pop('perspective',None)
         else:self.value['perspective']=spec
-        self.perspective_message.setText('四角顺序：左上 → 右上 → 右下 → 左下。右侧为结果；可指定输出比例，或关闭四角模式继续裁切。')
+        _ui(self.perspective_message.setText, _t('四角顺序：左上 → 右上 → 右下 → 左下。右侧为结果；可指定输出比例，或关闭四角模式继续裁切。'))
         self.timer.start();self.canvas.viewport().update()
 
     def clear_perspective(self):
         self.value.pop('perspective',None);self.canvas.quad=[p.copy() for p in perspective.FULL];self.canvas.quad_invalid=False
         self.perspective_ratio.blockSignals(True);self.perspective_ratio.setCurrentIndex(0);self.perspective_ratio.blockSignals(False)
-        self.apply_button.setEnabled(True);self.perspective_message.setText('透视已清除；其他裁切与校直保留。')
+        self.apply_button.setEnabled(True);_ui(self.perspective_message.setText, _t('透视已清除；其他裁切与校直保留。'))
         self.refresh()
 
     def change_grid(self):
@@ -445,9 +446,9 @@ class GeometryDialog(QDialog):
         self.update_line_list()
 
     def update_line_list(self):
-        self.line_list.blockSignals(True);self.line_list.clear()
+        self.line_list.blockSignals(True);_ui(self.line_list.clear)
         for i,row in enumerate(self.canvas.reference_lines):
-            self.line_list.addItem(f'{i+1} · '+('水平' if row['axis']=='horizontal' else '竖直')+(' · 未采用' if i in self.canvas.invalid_lines else ''))
+            _ui(self.line_list.addItem, _tf('{0} · ', i+1)+(_t('水平') if row['axis']=='horizontal' else _t('竖直'))+(_t(' · 未采用') if i in self.canvas.invalid_lines else ''))
         self.line_list.setCurrentIndex(self.canvas.selected_line);self.line_list.blockSignals(False)
         self.delete_line_button.setEnabled(self.canvas.line_mode and self.canvas.selected_line>=0)
         self.clear_lines_button.setEnabled(self.canvas.line_mode and bool(self.canvas.reference_lines))
@@ -462,11 +463,11 @@ class GeometryDialog(QDialog):
 
     def add_line(self):
         self.canvas.line_drag=None;self.canvas.select_line(-1)
-        self.line_message.setText('请选择新线的水平 / 竖直方向，再在左侧空白处拖动画线。已有参考线继续参与计算。')
+        _ui(self.line_message.setText, _t('请选择新线的水平 / 竖直方向，再在左侧空白处拖动画线。已有参考线继续参与计算。'))
 
     def clear_lines(self):
         self.canvas.clear_lines();self.update_line_list()
-        self.line_message.setText('参考线已清空，保留当前角度；可重新画线，或用“重置几何”归零。')
+        _ui(self.line_message.setText, _t('参考线已清空，保留当前角度；可重新画线，或用“重置几何”归零。'))
 
     def recalculate_lines(self):
         shape=self.preview['source_shape']
@@ -478,12 +479,12 @@ class GeometryDialog(QDialog):
             except ValueError:self.canvas.invalid_lines.add(i)
         self.update_line_list();self.canvas.viewport().update()
         try:result=geometry.lines_straighten(rows,shape)
-        except ValueError as error:self.line_message.setText(str(error)+'；保留当前角度。');return
+        except ValueError as error:_ui(self.line_message.setText, str(error)+_t('；保留当前角度。'));return
         angle=result['angle']
-        message=f'{len(result["used"])} 条有效参考线 · 综合校直 {angle:+.2f}° · 最大角度偏差 {result["max_deviation"]:.2f}°。'
+        message=_tf('{0} 条有效参考线 · 综合校直 {1:+.2f}° · 最大角度偏差 {2:.2f}°。', len(result["used"]), angle, result["max_deviation"])
         if result['rejected']:
-            message+=' 未采用：'+'；'.join(f'{r["index"]+1} 号（{r["reason"]}）' for r in result['rejected'])
-        self.line_message.setText(message)
+            message+=_t(' 未采用：')+'；'.join(_tf('{0} 号（{1}）', r["index"]+1, r["reason"]) for r in result['rejected'])
+        _ui(self.line_message.setText, message)
         self.value['straighten']=angle;self.angle.set_value(angle);self.timer.start()
 
     def crop_changed(self,crop):
@@ -497,7 +498,7 @@ class GeometryDialog(QDialog):
         self.syncing=False
         h,w=geometry.output_shape(self.preview['source_shape'],self.value)
         oh,ow=self.preview['source_shape']
-        self.dimensions.setText(f'原始帧 {ow} × {oh}  →  全尺寸输出 {w} × {h} px   ·   拉直范围 ±15°；比例不改变输出像素密度')
+        _ui(self.dimensions.setText, _tf('原始帧 {0} × {1}  →  全尺寸输出 {2} × {3} px   ·   拉直范围 ±15°；比例不改变输出像素密度', ow, oh, w, h))
 
     def edges_changed(self):
         if self.syncing:return

@@ -2,13 +2,15 @@
 
 **在本机完成胶片反相、逐帧精修与批量交付。**
 
-A local film negative conversion and editing tool for Windows. Supports color and black-and-white negatives, RAW files, film strip scans, independent editing of multiple images, batch proofing and export, and 16-bit TIFF output with embedded ICC profiles. Available in installer and portable editions.
-
 FilmInvert Native 是一款面向 Windows 的胶片数字化修片工具，适用于相机翻拍和扫描得到的彩色负片、黑白负片及整条胶片图像。从片基取样、密度域反相、明暗与色彩调整，到切帧、几何校正、局部修复和 16bit TIFF 导出，可以在同一个原生桌面界面中完成。
 
 软件采用黑白灰的极简“暗房”布局：中央大图、右侧调色、底部照片与胶片帧导航。既适合逐张处理，也支持把一批照片组织成可暂停、可恢复、经过人工复核的导出流程。
 
-**当前版本：3.0.0 · Windows x64 · 安装版 / 免安装版**
+**当前版本：3.0.1 · Windows x64 · 安装版 / 免安装版**
+
+[English introduction](README.en.md)
+
+3.0.1 新增简体中文 / English 界面。使用主工具栏的语言下拉框，或「视图 → Language / 语言」即时切换；软件会记住选择。当前照片、编辑历史、批次和导出队列保留，文件名与用户标签保持原文。英文界面的帮助入口打开随包英文说明。
 
 ---
 
@@ -77,14 +79,14 @@ FilmInvert Native 是一款面向 Windows 的胶片数字化修片工具，适�
 
 ## 下载与安装
 
-前往 [v3.0.0 下载页面](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/tag/v3.0.0)，选择 Windows x64 发行文件：
+前往 [v3.0.1 下载页面](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/tag/v3.0.1)，选择 Windows x64 发行文件：
 
 | 文件 | 用途 |
 | --- | --- |
-| [FilmInvert-Native-3.0.0-setup-win64-20261028.exe](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.0.0/FilmInvert-Native-3.0.0-setup-win64-20261028.exe) | 常规安装，提供开始菜单、可选桌面入口与卸载 |
-| [FilmInvert-Native-3.0.0-compat-win64-20261028.zip](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.0.0/FilmInvert-Native-3.0.0-compat-win64-20261028.zip) | 免安装版，完整解压后直接运行 |
-| [FilmInvert-Native-3.0.0-source-20261028.zip](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.0.0/FilmInvert-Native-3.0.0-source-20261028.zip) | 对应应用源码、构建与验证脚本 |
-| [SHA256 文本清单](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.0.0/SHA256-3.0.0.txt) / [JSON 清单](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.0.0/SHA256-3.0.0.json) | 发行文件完整性校验 |
+| [FilmInvert-Native-3.0.1-setup-win64-20261028.exe](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.0.1/FilmInvert-Native-3.0.1-setup-win64-20261028.exe) | 常规安装，提供开始菜单、可选桌面入口与卸载 |
+| [FilmInvert-Native-3.0.1-compat-win64-20261028.zip](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.0.1/FilmInvert-Native-3.0.1-compat-win64-20261028.zip) | 免安装版，完整解压后直接运行 |
+| [FilmInvert-Native-3.0.1-source-20261028.zip](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.0.1/FilmInvert-Native-3.0.1-source-20261028.zip) | 对应应用源码、构建与验证脚本 |
+| [SHA256 文本清单](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.0.1/SHA256-3.0.1.txt) / [JSON 清单](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.0.1/SHA256-3.0.1.json) | 发行文件完整性校验 |
 
 两种运行包均包含独立的官方 Python / Qt 运行时，**不需要另外安装 Python 或 Qt**。
 
@@ -148,6 +150,8 @@ FilmInvert Native 是一款面向 Windows 的胶片数字化修片工具，适�
 
 ## 验证与已知限制
 
+3.0.1 完成 35 项随包隔离检查，语言切换与当前编辑/任务保留的验证范围见 [3.0.1 验证说明](RELEASE-VALIDATION-3.0.1.md)。下面保留 3.0.0 的历史证据。
+
 3.0.0 基于已验收的 rc13 完成正式分发，已通过 34 项随包隔离检查，以及中文 / 空格路径、安装与卸载、实际禁写目录启动与回退、旧工程 / 会话 / 照片库恢复、TIFF 像素一致性、归档完整性与隐私排除检查。自动化 Qt 启动与交互测试采用 offscreen 平台，具体范围见验证文档。
 
 - 自动反相、测光、分帧与通道修复需要人工判断，不能恢复已剪裁或未采集的信息。
@@ -158,6 +162,9 @@ FilmInvert Native 是一款面向 Windows 的胶片数字化修片工具，适�
 ## 文档与构建
 
 - [完整中文介绍与使用指南](软件介绍.md)
+- [English introduction & quick start](README.en.md)
+- [3.0.1 发布说明](RELEASE-NOTES-3.0.1.md)
+- [语言切换说明](LOCALIZATION.md)
 - [批量工作流操作手册](WORKFLOW-GUIDE.md)
 - [3.0.0 发布说明](RELEASE-NOTES-3.0.0.md)
 - [发布验证与限制](RELEASE-VALIDATION-3.0.0.md)

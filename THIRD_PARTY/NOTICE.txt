@@ -1,0 +1,19 @@
+FilmInvert Native 3.0.0 third-party components
+
+Official CPython 3.13.17, NumPy/OpenBLAS 2.3.5, Pillow/LittleCMS 12.3.0,
+rawpy/LibRaw 0.27.1, Qt/PySide6 Essentials and Shiboken6 6.12.0.
+Pinned download sources and SHA256 are in dependencies.json (distribution)
+or build/compat-dependencies.json (source). Original upstream licenses and
+notices are retained. No PyInstaller bootloader is shipped in the stable edition.
+Application Python sources are supplied in app/ and the companion source ZIP.
+Qt DLLs are external, dynamically linked and replaceable by compatible builds.
+
+Qt/PySide corresponding sources:
+https://code.qt.io/cgit/qt/qtbase.git/tag/?h=v6.12.0
+https://code.qt.io/cgit/pyside/pyside-setup.git/tag/?h=v6.12.0
+https://download.qt.io/official_releases/QtForPython/pyside6/PySide6-6.12.0-src/
+
+Windows installer generated using unmodified Inno Setup 6.7.3.
+Copyright (C) 1997-2026 Jordan Russell. Portions Copyright (C) 2000-2026
+Martijn Laan. https://jrsoftware.org/ See InnoSetup-LICENSE.txt.
+The Inno Setup compiler is a build tool, not included as an installed runtime.

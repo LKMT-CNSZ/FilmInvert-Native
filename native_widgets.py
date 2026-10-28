@@ -1,4 +1,5 @@
 """Qt Widgets canvas, histogram, curve editor and parameter rows."""
+from i18n import tr as _t, trf as _tf, ui as _ui
 import math
 import numpy as np
 from PySide6.QtCore import Qt,Signal,QPointF,QRectF
@@ -34,13 +35,13 @@ class ParameterRow(QWidget):
     def __init__(self,label,key,minimum,maximum,step,default=0):
         super().__init__(); self.key=key; self.step=step; self.minimum=minimum
         layout=QHBoxLayout(self); layout.setContentsMargins(0,3,0,3)
-        text=QLabel(label); text.setMinimumWidth(74); layout.addWidget(text)
-        self.slider=QSlider(Qt.Orientation.Horizontal); self.slider.setAccessibleName(label)
+        text=_ui(QLabel, label); text.setMinimumWidth(74); layout.addWidget(text)
+        self.slider=QSlider(Qt.Orientation.Horizontal); _ui(self.slider.setAccessibleName, label)
         self.slider.setObjectName('slider_'+key)
         self.slider.setRange(0,round((maximum-minimum)/step)); layout.addWidget(self.slider,1)
         self.spin=QDoubleSpinBox(); self.spin.setRange(minimum,maximum); self.spin.setSingleStep(step)
         self.spin.setDecimals(0 if step >= 1 else 2); self.spin.setFixedWidth(92)
-        self.spin.setAccessibleName(label+'数值'); self.spin.setObjectName('value_'+key)
+        _ui(self.spin.setAccessibleName, label+_t('数值')); self.spin.setObjectName('value_'+key)
         self.spin.setKeyboardTracking(False); layout.addWidget(self.spin)
         self.set_value(default)
         self.slider.valueChanged.connect(self._slide)
@@ -68,12 +69,12 @@ class ImageCanvas(QGraphicsView):
     sampled=Signal(float,float)
     pathDropped=Signal(str)
     pathsDropped=Signal(object)
-    zoomChanged=Signal(str)
+    zoomChanged=Signal(object)
     viewportChanged=Signal()
     def __init__(self):
-        super().__init__(); self.setObjectName('imageCanvas'); self.setAccessibleName('胶片预览画布')
+        super().__init__(); self.setObjectName('imageCanvas'); _ui(self.setAccessibleName, _t('胶片预览画布'))
         self.scene_=QGraphicsScene(self); self.setScene(self.scene_)
-        self.item=QGraphicsPixmapItem(); self.scene_.addItem(self.item)
+        self.item=QGraphicsPixmapItem(); _ui(self.scene_.addItem, self.item)
         self.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         self.setBackgroundBrush(QColor('#111111')); self.setFrameShape(QGraphicsView.Shape.NoFrame)
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag); self.setAcceptDrops(True)
@@ -94,7 +95,7 @@ class ImageCanvas(QGraphicsView):
         self.item.setPixmap(QPixmap());self.clipping_item.setPixmap(QPixmap());self.item.setPos(0,0)
         self.scene_.setSceneRect(0,0,shape[1],shape[0]);self.resetTransform()
         self.centerOn(center[0]*shape[1],center[1]*shape[0]);self.setting_region=False
-        self.zoomChanged.emit('100% · 可见区域')
+        self.zoomChanged.emit(_t('100% · 可见区域'))
     def region_box(self):
         rect=self.mapToScene(self.viewport().rect()).boundingRect();h,w=self.region_shape
         return (max(0,int(math.floor(rect.left()))-64),max(0,int(math.floor(rect.top()))-64),
@@ -140,12 +141,12 @@ class ImageCanvas(QGraphicsView):
         if self.item.pixmap().isNull():
             painter=QPainter(self.viewport());painter.setPen(QColor('#b8b8b8'))
             font=painter.font();font.setPointSize(18);painter.setFont(font)
-            painter.drawText(self.viewport().rect(),Qt.AlignmentFlag.AlignCenter,'拖入一张开始修片，多张显示在底部照片导航\n\nCtrl+O 打开 RAW / TIFF / PNG / JPEG')
+            _ui(painter.drawText, self.viewport().rect(),Qt.AlignmentFlag.AlignCenter,_t('拖入一张开始修片，多张显示在底部照片导航\n\nCtrl+O 打开 RAW / TIFF / PNG / JPEG'))
     def fit_image(self):
         self.fit_mode=True
         if not self.item.pixmap().isNull():
             self.fitInView(self.item,Qt.AspectRatioMode.KeepAspectRatio)
-        self.zoomChanged.emit('适应窗口')
+        self.zoomChanged.emit(_t('适应窗口'))
     def resizeEvent(self,event):
         super().resizeEvent(event)
         if self.fit_mode:self.fit_image()
@@ -163,8 +164,8 @@ class ImageCanvas(QGraphicsView):
             marker.setPen(QPen(QColor('#ededed'),2));marker.setBrush(QBrush(QColor(16,16,16,160)))
             marker.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIgnoresTransformations)
             marker.setPos(point[0]*rect.width(),point[1]*rect.height());marker.setZValue(10)
-            label=QGraphicsSimpleTextItem(str(i+1),marker);label.setBrush(QBrush(QColor('#ededed')));label.setPos(7,-9)
-            self.scene_.addItem(marker);self.marker_items.append(marker)
+            label=_ui(QGraphicsSimpleTextItem, str(i+1),marker);label.setBrush(QBrush(QColor('#ededed')));label.setPos(7,-9)
+            _ui(self.scene_.addItem, marker);self.marker_items.append(marker)
     def mousePressEvent(self,event):
         if self.sampling and event.button()==Qt.MouseButton.LeftButton and not self.item.pixmap().isNull():
             point=self.mapToScene(event.position().toPoint()); rect=self.sceneRect() if self.region_mode else self.item.boundingRect()
@@ -179,7 +180,7 @@ class ImageCanvas(QGraphicsView):
         scale=1.2 if event.angleDelta().y()>0 else 1/1.2
         value=self.transform().m11()*scale
         if .02<value<30:self.scale(scale,scale)
-        self.zoomChanged.emit(f'{self.transform().m11()*100:.0f}%（当前预览）')
+        self.zoomChanged.emit(_tf('{0:.0f}%（当前预览）', self.transform().m11()*100))
     def dragEnterEvent(self,event):
         if dropped_paths(event.mimeData()):event.acceptProposedAction()
         else:event.ignore()
@@ -194,7 +195,7 @@ class ImageCanvas(QGraphicsView):
 class Histogram(QWidget):
     def __init__(self):
         super().__init__();self.bins=None;self.setMinimumHeight(116);self.setMaximumHeight(140)
-        self.setAccessibleName('RGB 对数直方图')
+        _ui(self.setAccessibleName, _t('RGB 对数直方图'))
     def set_bins(self,bins):self.bins=bins;self.update()
     def paintEvent(self,event):
         p=QPainter(self);p.fillRect(self.rect(),QColor('#161616'));p.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -203,7 +204,7 @@ class Histogram(QWidget):
         for i in range(5):
             x=box.left()+box.width()*i/4;p.drawLine(QPointF(x,box.top()),QPointF(x,box.bottom()))
         if self.bins is None:
-            p.setPen(QColor('#a8a8a8'));p.drawText(self.rect(),Qt.AlignmentFlag.AlignCenter,'打开图像后显示 RGB 直方图');return
+            p.setPen(QColor('#a8a8a8'));_ui(p.drawText, self.rect(),Qt.AlignmentFlag.AlignCenter,_t('打开图像后显示 RGB 直方图'));return
         peak=max(1,max(float(np.log1p(b).max()) for b in self.bins))
         for bins,color in zip(self.bins,('#e27878','#78bd90','#7ba4db')):
             path=QPainterPath()
@@ -212,16 +213,16 @@ class Histogram(QWidget):
                 path.moveTo(point) if i==0 else path.lineTo(point)
             p.setPen(QPen(QColor(color),1.2));p.drawPath(path)
         p.setPen(QColor('#a8a8a8'));labels=QRectF(9,self.height()-24,self.width()-18,18)
-        p.drawText(labels,Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter,'0')
-        p.drawText(labels,Qt.AlignmentFlag.AlignCenter,'RGB · 对数纵轴')
-        p.drawText(labels,Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignVCenter,'255')
+        _ui(p.drawText, labels,Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter,'0')
+        _ui(p.drawText, labels,Qt.AlignmentFlag.AlignCenter,_t('RGB · 对数纵轴'))
+        _ui(p.drawText, labels,Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignVCenter,'255')
 
 class CurveEditor(QWidget):
     changed=Signal(object);committed=Signal()
     def __init__(self):
         super().__init__();self.points=[[0.,0.],[1.,1.]];self.active=-1;self.dragging=False
         self.setMinimumHeight(195);self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        self.setAccessibleName('影调曲线：双击加点或删除，拖动调整')
+        _ui(self.setAccessibleName, _t('影调曲线：双击加点或删除，拖动调整'))
     def area(self):return QRectF(14,14,self.width()-28,self.height()-28)
     def coordinate(self,point):
         r=self.area();return [float(np.clip((point.x()-r.left())/r.width(),0,1)),float(np.clip(1-(point.y()-r.top())/r.height(),0,1))]

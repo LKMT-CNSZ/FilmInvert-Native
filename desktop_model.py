@@ -20,7 +20,7 @@ import geometry
 from loader import load
 from file_io import io_path,temporary_path
 
-VERSION = '3.0.0'
+VERSION = '3.0.1'
 from preview_cache import PreviewCache
 from document_cache import DocumentCache,BlobCache
 PREVIEWS=PreviewCache()

@@ -1,4 +1,5 @@
 """Batch filters, editing-aware keys and read-only adjacent-source prefetch."""
+from i18n import tr as _t, trf as _tf, ui as _ui
 from pathlib import Path
 import struct
 import threading
@@ -32,30 +33,30 @@ class PhotoFilters(QWidget):
     changed=Signal()
     def __init__(self,parent=None):
         super().__init__(parent);line=QHBoxLayout(self);line.setContentsMargins(0,0,0,0)
-        self.search=QLineEdit();self.search.setPlaceholderText('搜索文件名 / 分组 / 路径');self.search.setClearButtonEnabled(True);line.addWidget(self.search,2)
-        self.group=QComboBox();self.group.addItem('全部分组',None);line.addWidget(self.group,1)
+        self.search=QLineEdit();_ui(self.search.setPlaceholderText, _t('搜索文件名 / 分组 / 路径'));self.search.setClearButtonEnabled(True);line.addWidget(self.search,2)
+        self.group=QComboBox();_ui(self.group.addItem, _t('全部分组'),None);line.addWidget(self.group,1)
         self.state=QComboBox()
-        for title,key in [('全部状态',None),('待检查','check'),('待准备','prepare'),('待复核','review'),('可导出','ready'),('已入队','queued'),('已完成','completed'),('失败','failed'),('跳过 / 弃选','skip')]:self.state.addItem(title,key)
+        for title,key in [(_t('全部状态'),None),(_t('待检查'),'check'),(_t('待准备'),'prepare'),(_t('待复核'),'review'),(_t('可导出'),'ready'),(_t('已入队'),'queued'),(_t('已完成'),'completed'),(_t('失败'),'failed'),(_t('跳过 / 弃选'),'skip')]:_ui(self.state.addItem, title,key)
         line.addWidget(self.state,1);self.rating=QComboBox()
-        for n in range(6):self.rating.addItem('全部星级' if n==0 else f'{n} 星及以上',n)
+        for n in range(6):_ui(self.rating.addItem, _t('全部星级') if n==0 else _tf('{0} 星及以上', n),n)
         line.addWidget(self.rating);self.flag=QComboBox()
-        for title,key in [('全部标记',None),('精选','pick'),('弃选','reject'),('未标记','none')]:self.flag.addItem(title,key)
-        line.addWidget(self.flag);button=QPushButton('清除筛选');button.clicked.connect(self.reset);line.addWidget(button)
+        for title,key in [(_t('全部标记'),None),(_t('精选'),'pick'),(_t('弃选'),'reject'),(_t('未标记'),'none')]:_ui(self.flag.addItem, title,key)
+        line.addWidget(self.flag);button=_ui(QPushButton, _t('清除筛选'));button.clicked.connect(self.reset);line.addWidget(button)
         self.search.textChanged.connect(self.changed)
         for widget in (self.group,self.state,self.rating,self.flag):widget.currentIndexChanged.connect(self.changed)
-        for name,widget in [('搜索照片',self.search),('按分组筛选',self.group),('按处理状态筛选',self.state),('最低星级',self.rating),('按标记筛选',self.flag)]:widget.setAccessibleName(name)
+        for name,widget in [(_t('搜索照片'),self.search),(_t('按分组筛选'),self.group),(_t('按处理状态筛选'),self.state),(_t('最低星级'),self.rating),(_t('按标记筛选'),self.flag)]:_ui(widget.setAccessibleName, name)
     def reset(self):
         widgets=(self.search,self.group,self.state,self.rating,self.flag)
         for widget in widgets:widget.blockSignals(True)
-        self.search.clear()
+        _ui(self.search.clear)
         for widget in widgets[1:]:widget.setCurrentIndex(0)
         for widget in widgets:widget.blockSignals(False)
         self.changed.emit()
     def groups(self,values):
         values=sorted(set(values))
         if [self.group.itemData(i) for i in range(1,self.group.count())]==values:return
-        previous=self.group.currentData();self.group.blockSignals(True);self.group.clear();self.group.addItem('全部分组',None)
-        for value in values:self.group.addItem(value or '未分组',value)
+        previous=self.group.currentData();self.group.blockSignals(True);_ui(self.group.clear);_ui(self.group.addItem, _t('全部分组'),None)
+        for value in values:_ui(self.group.addItem, value or _t('未分组'),value)
         self.group.setCurrentIndex(max(0,self.group.findData(previous)));self.group.blockSignals(False)
     def active(self):return bool(self.search.text().strip() or any(w.currentIndex() for w in (self.group,self.state,self.rating,self.flag)))
     def accepts(self,asset,group,state):

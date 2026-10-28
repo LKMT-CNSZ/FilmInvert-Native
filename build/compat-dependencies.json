@@ -1,0 +1,50 @@
+[
+  {
+    "package": "CPython-embeddable",
+    "version": "3.13.17",
+    "filename": "python-3.13.17-embed-amd64.zip",
+    "url": "https://www.python.org/ftp/python/3.13.17/python-3.13.17-embed-amd64.zip",
+    "sha256": "9e35319bffedab8b36ad44d8f377cb4f1733bcec257a0b6d04d94f01486ddb38",
+    "provenance": "https://www.python.org/downloads/release/python-31317/"
+  },
+  {
+    "package": "numpy",
+    "version": "2.3.5",
+    "filename": "numpy-2.3.5-cp313-cp313-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/0c/88/e2eaa6cffb115b85ed7c7c87775cb8bcf0816816bc98ca8dbfa2ee33fe6e/numpy-2.3.5-cp313-cp313-win_amd64.whl",
+    "sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b",
+    "provenance": "https://pypi.org/pypi/numpy/2.3.5/json"
+  },
+  {
+    "package": "Pillow",
+    "version": "12.3.0",
+    "filename": "pillow-12.3.0-cp313-cp313-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/a6/9b/7a58e61d62be561da3a356fe2384d4059a6345fc130e23ef1c36a5b81d24/pillow-12.3.0-cp313-cp313-win_amd64.whl",
+    "sha256": "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
+    "provenance": "https://pypi.org/pypi/Pillow/12.3.0/json"
+  },
+  {
+    "package": "rawpy",
+    "version": "0.27.1",
+    "filename": "rawpy-0.27.1-cp313-cp313-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/49/b3/bcf334c428ae3fdcf333b2df8cc11d347960f51feb333dac12621f714588/rawpy-0.27.1-cp313-cp313-win_amd64.whl",
+    "sha256": "1d2d32bfe7df6421f214f0502d34bd599ce53156401928c4f538336f2f8b3689",
+    "provenance": "https://pypi.org/pypi/rawpy/0.27.1/json"
+  },
+  {
+    "package": "PySide6-Essentials",
+    "version": "6.12.0",
+    "filename": "pyside6_essentials-6.12.0-cp310-abi3-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/03/61/9a7e32a37b224f68506785bfb0f288d516098ec71681782d72b695a6c95d/pyside6_essentials-6.12.0-cp310-abi3-win_amd64.whl",
+    "sha256": "c9a95102aa23c1f86516a30d5a9be37552d324eee7e567eb7508973f1218cb42",
+    "provenance": "https://pypi.org/pypi/PySide6-Essentials/6.12.0/json"
+  },
+  {
+    "package": "shiboken6",
+    "version": "6.12.0",
+    "filename": "shiboken6-6.12.0-cp310-abi3-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/2a/b6/bee97e7a2edeab72aafabb46ee5adc939790a638d107860b4cad7a20e407/shiboken6-6.12.0-cp310-abi3-win_amd64.whl",
+    "sha256": "a1906cb8116869178c64b6bab52623bbc8b4ceed7b30bfc3c9aa0f6e67f6438e",
+    "provenance": "https://pypi.org/pypi/shiboken6/6.12.0/json"
+  }
+]
