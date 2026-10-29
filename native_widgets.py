@@ -72,7 +72,10 @@ class ImageCanvas(QGraphicsView):
     zoomChanged=Signal(object)
     viewportChanged=Signal()
     def __init__(self):
-        super().__init__(); self.setObjectName('imageCanvas'); _ui(self.setAccessibleName, _t('胶片预览画布'))
+        super().__init__();
+        from native_hdr_canvas import NativeViewport
+        self.setViewport(NativeViewport(self));self.hdr_controller=None
+        self.setObjectName('imageCanvas'); _ui(self.setAccessibleName, _t('胶片预览画布'))
         self.scene_=QGraphicsScene(self); self.setScene(self.scene_)
         self.item=QGraphicsPixmapItem(); _ui(self.scene_.addItem, self.item)
         self.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
@@ -101,6 +104,7 @@ class ImageCanvas(QGraphicsView):
         return (max(0,int(math.floor(rect.left()))-64),max(0,int(math.floor(rect.top()))-64),
                 min(w,int(math.ceil(rect.right()))+64),min(h,int(math.ceil(rect.bottom()))+64))
     def set_region_pixels(self,array,box,shape,display=None,diagnostics=None):
+        if getattr(self,'import_reveal',None):self.import_reveal.stop()
         self.setting_region=True;self.region_mode=True;self.region_shape=shape;self.fit_mode=False
         self.pixels=array;self.diagnostics=diagnostics;self.item.setPos(box[0],box[1])
         self.item.setPixmap(QPixmap.fromImage(image_from_array(array if display is None else display)))
@@ -109,6 +113,7 @@ class ImageCanvas(QGraphicsView):
         self.setting_region=True;self.region_mode=False;self.region_shape=None
         self.item.setPos(0,0);self.setting_region=False
     def set_pixels(self,array,full=False,display=None,diagnostics=None):
+        if getattr(self,'import_reveal',None):self.import_reveal.stop()
         self.end_region()
         self.diagnostics=diagnostics
         self.pixels=array
@@ -120,6 +125,8 @@ class ImageCanvas(QGraphicsView):
         elif full:
             self.resetTransform(); self.zoomChanged.emit('100%')
     def clear(self):
+        if getattr(self,'import_reveal',None):self.import_reveal.cancel()
+        if self.hdr_controller is not None:self.hdr_controller.set_linear(None)
         self.end_region()
         self.pixels=None;self.item.setPixmap(QPixmap());self.clipping_item.setPixmap(QPixmap())
         for item in self.marker_items:self.scene_.removeItem(item)
@@ -137,6 +144,7 @@ class ImageCanvas(QGraphicsView):
         im=QImage(overlay.data,overlay.shape[1],overlay.shape[0],overlay.strides[0],QImage.Format.Format_RGBA8888).copy()
         self.clipping_item.setPixmap(QPixmap.fromImage(im))
     def paintEvent(self,event):
+        if self.hdr_controller is not None and self.hdr_controller.paint():return
         super().paintEvent(event)
         if self.item.pixmap().isNull():
             painter=QPainter(self.viewport());painter.setPen(QColor('#b8b8b8'))

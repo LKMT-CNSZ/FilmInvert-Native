@@ -67,7 +67,7 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build'/'tests',prefix='wide-') as tmp
     window.set_parameters(dict(window.p,mode='positive',black=0.,white=1.,output_space='prophoto'));idle()
     preview=model.preview(window.p);assert 'wide' in preview
     assert np.max(np.abs(preview['wide']-quant))<.00001
-    snapshot=model.project_snapshot(window.p);assert snapshot['version']==4
+    snapshot=model.project_snapshot(window.p);assert snapshot['version']==8
     project=folder/'wide.filmproj';model.save_project(project,window.p)
     window.open_project_path(str(project));idle();assert window.p['working_space']=='prophoto'
     destination=folder/'wide-output.tif';window.export_to(str(destination));idle()
@@ -84,7 +84,7 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build'/'tests',prefix='wide-') as tmp
         path=Path(store.get_job(job)['destination'])/f'frame-{i+1:04d}.tif'
         assert np.max(np.abs(read_tiff(str(path)).astype(int)-read_tiff(str(source))[:,i*80:(i+1)*80].astype(int)))<=1
     archive=folder/'wide.filmbackup';backup(store,archive);restore(store,archive)
-    assert store.get_asset(asset)['snapshot']['version']==4
+    assert store.get_asset(asset)['snapshot']['version']==8
     # Changing workspaces uses a concrete backup and resets the new document.
     choose=ui.QInputDialog.getItem;question=ui.QMessageBox.question
     ui.QInputDialog.getItem=lambda *a,**k:('sRGB 兼容工作空间',True)
@@ -92,7 +92,7 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build'/'tests',prefix='wide-') as tmp
     try:window.change_working_space();idle()
     finally:ui.QInputDialog.getItem=choose;ui.QMessageBox.question=question
     saved=list((store.folder/'snapshots').glob('before-workspace-*.filmproj'))
-    assert len(saved)==1 and model.read_project(saved[0])['version']==4
+    assert len(saved)==1 and model.read_project(saved[0])['version']==8
     assert window.p['working_space']=='srgb'
     window.open_project_path(str(saved[0]));idle();assert window.p['working_space']=='prophoto'
     window.loaded=False;window.close();app.processEvents()

@@ -1,10 +1,12 @@
 # FilmInvert Native
 
+**3.1.0-rc12 feature preview:** film-edge exclusion for automatic metering; single-image highlights/shadows/whites/blacks; local tone mapping; multi-exposure HDR merging; linear ICC-tagged float32 HDR TIFF; native Windows scRGB HDR preview. Read [the HDR guide](HDR-GUIDE.md). HDR display is experimental: FP16 creation and SDR refusal were tested, while visual validation on HDR hardware is pending.
+
 **A local film inversion and photo editing tool for Windows.**
 
 FilmInvert Native turns digitized color and black-and-white negatives into editable positive images. It brings RAW input, whole-strip scans, independent photo editing, batch proofing and ICC-tagged 16-bit TIFF export into one native Qt desktop application. Installer and portable ZIP editions include their own Python runtime.
 
-Version **3.0.1** adds a **Simplified Chinese / English** interface. Choose a language from the toolbar or **View → Language / 语言**. The interface updates immediately and remembers your choice. Open photos, edits, history and queued exports remain in place; filenames, roll tags and other user-entered text keep their original spelling.
+Since version **3.0.1**, the app offers a **Simplified Chinese / English** interface. Choose a language from the toolbar or **View → Language / 语言**. The interface updates immediately and remembers your choice. Open photos, edits, history and queued exports remain in place; filenames, roll tags and other user-entered text keep their original spelling.
 
 ## Main features
 
@@ -22,7 +24,9 @@ Version **3.0.1** adds a **Simplified Chinese / English** interface. Choose a la
 
 ## Download
 
-Download the Windows installer or portable ZIP from [Releases v3.0.1](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/tag/v3.0.1). Matching source and SHA256 checksums are provided on the same page.
+Download the installer, portable ZIP, matching source and SHA256 checksums from [v3.1.0-rc12](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/tag/v3.1.0-rc12). This is a prerelease.
+
+This build adds a 1.2-second mascot film-development startup animation, a 1.6-second soft reveal on each frame change, a fix for overlapping navigation cards, and unified SDR TIFF, float32 HDR TIFF and Windows HDR JXR export.
 
 ## Get started
 
@@ -76,3 +80,28 @@ Processing runs locally. The native desktop application does not start a web ser
 ## Short description for GitHub
 
 A local film inversion and photo editing tool for Windows, with Chinese and English interfaces. Supports color and B&W negatives, RAW and whole-strip scans, independent photo editing, batch proofing and export, and ICC-tagged 16-bit TIFF output. Available as an installer or portable ZIP.
+
+The toolbar **HDR canvas** switch enables native HDR directly in the editable main canvas. System HDR is required. Exposure, undo, sampling, zoom and photo navigation remain available. The histogram reports SDR output statistics; SDR proofing overlays are unavailable while the HDR canvas is active. Hardware visual QA is pending.
+
+If the reported display peak is missing or outside 80–10000 nits, HDR preview explicitly assumes 1000 nits and reports this in the status bar. Use Windows HDR Calibration to verify your display. This estimate never changes grading parameters or HDR master pixels.
+
+## Unified TIFF export
+
+The top Export TIFF button and Ctrl+Shift+S now offer SDR TIFF - 16bit and HDR TIFF - Float32 in the save dialog. HDR is selected by default when the main HDR canvas is active; the selected file type determines the output. HDR TIFF preserves linear floating-point highlights and includes a linear ICC profile. The existing File menu HDR export entry uses the same dialog. Roll and batch exports remain SDR.
+
+## Windows HDR delivery
+
+Export TIFF / HDR offers Windows HDR - JPEG XR (*.jxr), selected by default when the HDR canvas is active. Native WIC encoding converts working primaries to linear sRGB and scales nominal-white pixels by 203/80 into absolute scRGB units. It does not bake in a monitor-specific shoulder. Float TIFF remains the editing master; keep your project for further edits. JXR re-import is not supported yet. The codec uses Lossless mode but its float preprocessing can quantize values; bit-exact float preservation is not promised. Native encode/decode and export UI checks pass; the user opened the real JXR in Microsoft Photos and reported brightness closer to the FilmInvert preview. This is user visual feedback, not instrument-based or cross-device validation. Other viewers may use different tone mapping.
+
+## First-view reveal and frame navigation
+
+New negative imports initially show actual, masked source thumbnails in the frame strip. Each frame reveals from left to right with a soft edge over 1.6 seconds on first viewing and every time you switch to it and every time you switch to it and every time you switch to it, with RGB channels transitioning together. After playback its thumbnail becomes the current positive; unviewed frames remain negative. Completion is stored in the current user profile using source content, input interpretation and frame geometry. Switching to a different frame replays the reveal, including previously developed frames. Reopening an image or restoring an edit/project does not replay it. Changed source content or a newly defined frame gets a new identity.
+
+Mouse, wheel, keyboard and grading can skip the animation and show the positive. Disabling View → Reveal on first viewing, or Windows animations, shows the result directly. Positive mode does not animate. Grades, histogram/sampling data and exported pixels are unaffected. Fit and 100% region previews retain the 2.1 MP source-preview budget and 8 MP HDR display-cache budget; larger previews show the result directly. Additional DNG compression support is not included.
+
+The rc7 cached-texture, narrow-feather, background HDR preparation and 16 ms scheduling optimizations remain. The 1.6-second clock starts after HDR preparation; viewport changes or further interaction can cancel preparation. HDR blends display-linear scRGB endpoints and restores the actual edit on completion.
+
+
+## Startup reveal
+
+A 1.2-second left-to-right soft reveal develops the supplied red-and-white mascot logo, then fades into the editor. Processing modules import in a background thread; Qt widgets are created on the GUI thread. Slow initialization does not add another animation-length wait. Click the splash or press Escape to skip; Windows animation preferences are respected. Image arguments open once. Navigation reveal remains 1.6 seconds. A display-size copy of the supplied logo is bundled.

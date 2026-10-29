@@ -38,7 +38,7 @@ finally:
     if denied:run(['icacls.exe',bundle,'/remove:d',f'*{sid}'],'restore-acl')
 result={'status':'pass','archive_sha256':hashlib.sha256(archive.read_bytes()).hexdigest(),'Chinese_space_extraction':True,'actual_launcher_Qt_event_loop_offscreen':True,'portable_local_data_and_shortcut':True,'actual_NTFS_readonly_fallback':True,'rc13_session_restored_and_exact_TIFF':True,'reports':reports}
 path=ROOT/'release'/f'{VERSION}-交付验证.json';record=json.loads(path.read_text('utf-8'));record['portable']=result
-record['isolated_regressions']={'count':35 if VERSION=='3.0.1' else 34,'status':'pass'}
+record['isolated_regressions']={'count':44 if VERSION=='3.1.0-rc12' else 43 if VERSION in ('3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12') else 42 if VERSION=='3.1.0-rc4' else 41 if VERSION in ('3.1.0-rc2','3.1.0-rc3') else 40 if VERSION=='3.1.0-rc1' else 35 if VERSION=='3.0.1' else 34,'status':'pass'}
 record['relocation_tamper_and_recovery']={'status':'pass','Chinese_space_path':True}
 path.write_text(json.dumps(record,ensure_ascii=False,indent=2),encoding='utf-8')
 print('PASS extracted portable launcher, local data/shortcut, actual read-only fallback, rc13 restoration and full uint16 equality')

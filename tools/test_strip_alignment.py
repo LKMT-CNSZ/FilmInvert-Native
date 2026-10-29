@@ -38,7 +38,7 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build/tests',prefix='alignment-') as 
     result=model.reframe(spec,p);p=result['params']
     assert model.source_region()['angle']==candidate['angle']
     project=folder/'aligned.filmproj';model.save_project(project,p);data=model.read_project(project)
-    assert data['version']==6 and data['input']['manual']['frames'][0]['angle']==candidate['angle']
+    assert data['version']==8 and data['input']['manual']['frames'][0]['angle']==candidate['angle']
     before=model.preview(p)['pixels'];opened=model.open_project(project)
     assert np.array_equal(model.preview(opened['params'])['pixels'],before)
     # Explicit format gate and wrong-layout rollback.
@@ -53,7 +53,7 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build/tests',prefix='alignment-') as 
     reference=model.core.process(model.engine.STATE['full'],model.params(p))
     assert np.array_equal(read_tiff(output),(np.clip(reference,0,1)*65535+.5).astype(np.uint16))
     recipe=json.loads(Path(str(output)+'.json').read_text('utf-8'))
-    assert recipe['version']==4 and recipe['source_region']['angle']==candidate['angle']
+    assert recipe['version']==6 and recipe['source_region']['angle']==candidate['angle']
     project_transfer.pack(model.project_snapshot(p),folder/'aligned.filmtransfer')
     moved=project_transfer.unpack(folder/'aligned.filmtransfer',folder/'moved')
     restored=model.open_project(moved['project'])
@@ -151,7 +151,7 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build/tests',prefix='alignment-') as 
     assert all('references' not in row and 'points' not in row for row in spec['manual']['frames'])
     opened=model.reframe(spec,p);p=opened['params'];p['mode']='positive'
     model.save_project(folder/'multi-input.filmproj',p);saved=model.read_project(folder/'multi-input.filmproj')
-    assert saved['version']==6 and saved['input']['manual']['rotation']==spec['manual']['rotation']
+    assert saved['version']==8 and saved['input']['manual']['rotation']==spec['manual']['rotation']
     for actual,row in zip(saved['input']['manual']['frames'],spec['manual']['frames']):
         assert all(actual[key]==value for key,value in row.items())
     model.open_project(folder/'multi-input.filmproj')

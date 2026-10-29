@@ -1,12 +1,16 @@
 # FilmInvert Native
 
+**3.1.0-rc12 功能预览版：**新增片边排除测光、单张高光/阴影/黑白场、局部色调映射、多曝光 HDR 合成、线性 ICC float32 HDR TIFF 和 Windows 原生 HDR 预览。用法及限制见 [HDR 指南](HDR-GUIDE.md)。HDR 显示目前为实验功能，已验证 FP16 通道和 SDR 拒绝，HDR 硬件视觉验收尚待完成。
+
+**本版更新：**红白胶片吉祥物的 1.2 秒启动显影；每次实际切帧播放 1.6 秒柔边显影；修复底部导航卡片重叠；统一提供 SDR TIFF、浮点 HDR TIFF 和 Windows HDR JXR 导出。
+
 **在本机完成胶片反相、逐帧精修与批量交付。**
 
 FilmInvert Native 是一款面向 Windows 的胶片数字化修片工具，适用于相机翻拍和扫描得到的彩色负片、黑白负片及整条胶片图像。从片基取样、密度域反相、明暗与色彩调整，到切帧、几何校正、局部修复和 16bit TIFF 导出，可以在同一个原生桌面界面中完成。
 
 软件采用黑白灰的极简“暗房”布局：中央大图、右侧调色、底部照片与胶片帧导航。既适合逐张处理，也支持把一批照片组织成可暂停、可恢复、经过人工复核的导出流程。
 
-**当前版本：3.0.1 · Windows x64 · 安装版 / 免安装版**
+**当前版本：3.1.0-rc12 功能预览版 · Windows x64 · 安装版 / 免安装版**
 
 [English introduction](README.en.md)
 
@@ -79,14 +83,14 @@ FilmInvert Native 是一款面向 Windows 的胶片数字化修片工具，适�
 
 ## 下载与安装
 
-前往 [v3.0.1 下载页面](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/tag/v3.0.1)，选择 Windows x64 发行文件：
+前往 [v3.1.0-rc12 下载页面](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/tag/v3.1.0-rc12)，选择 Windows x64 发行文件：
 
 | 文件 | 用途 |
 | --- | --- |
-| [FilmInvert-Native-3.0.1-setup-win64-20261028.exe](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.0.1/FilmInvert-Native-3.0.1-setup-win64-20261028.exe) | 常规安装，提供开始菜单、可选桌面入口与卸载 |
-| [FilmInvert-Native-3.0.1-compat-win64-20261028.zip](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.0.1/FilmInvert-Native-3.0.1-compat-win64-20261028.zip) | 免安装版，完整解压后直接运行 |
-| [FilmInvert-Native-3.0.1-source-20261028.zip](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.0.1/FilmInvert-Native-3.0.1-source-20261028.zip) | 对应应用源码、构建与验证脚本 |
-| [SHA256 文本清单](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.0.1/SHA256-3.0.1.txt) / [JSON 清单](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.0.1/SHA256-3.0.1.json) | 发行文件完整性校验 |
+| [FilmInvert-Native-3.1.0-rc12-setup-win64-20261029.exe](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.1.0-rc12/FilmInvert-Native-3.1.0-rc12-setup-win64-20261029.exe) | 常规安装，提供开始菜单、可选桌面入口与卸载 |
+| [FilmInvert-Native-3.1.0-rc12-compat-win64-20261029.zip](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.1.0-rc12/FilmInvert-Native-3.1.0-rc12-compat-win64-20261029.zip) | 免安装版，完整解压后直接运行 |
+| [FilmInvert-Native-3.1.0-rc12-source-20261029.zip](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.1.0-rc12/FilmInvert-Native-3.1.0-rc12-source-20261029.zip) | 对应应用源码、构建与验证脚本 |
+| [SHA256 文本清单](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.1.0-rc12/SHA256-3.1.0-rc12.txt) / [JSON 清单](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.1.0-rc12/SHA256-3.1.0-rc12.json) | 发行文件完整性校验 |
 
 两种运行包均包含独立的官方 Python / Qt 运行时，**不需要另外安装 Python 或 Qt**。
 
@@ -150,7 +154,7 @@ FilmInvert Native 是一款面向 Windows 的胶片数字化修片工具，适�
 
 ## 验证与已知限制
 
-3.0.1 完成 35 项随包隔离检查，语言切换与当前编辑/任务保留的验证范围见 [3.0.1 验证说明](RELEASE-VALIDATION-3.0.1.md)。下面保留 3.0.0 的历史证据。
+3.1.0-rc12 的 44 项随包隔离检查已通过，另完成 12 组旧核心逐像素一致性对照；当前验证范围见 [本版验证说明](RELEASE-VALIDATION-3.1.0-rc12.md)，实际执行和交付校验以同版交付验证 JSON 为准。3.0.1 的 35 项结果与下面的 3.0.0 结果是历史证据。
 
 3.0.0 基于已验收的 rc13 完成正式分发，已通过 34 项随包隔离检查，以及中文 / 空格路径、安装与卸载、实际禁写目录启动与回退、旧工程 / 会话 / 照片库恢复、TIFF 像素一致性、归档完整性与隐私排除检查。自动化 Qt 启动与交互测试采用 offscreen 平台，具体范围见验证文档。
 
@@ -176,3 +180,34 @@ FilmInvert Native 是一款面向 Windows 的胶片数字化修片工具，适�
 ## 问题反馈
 
 提交 Issue 时，请尽量附上软件版本、Windows 版本、输入格式 / 相机型号、复现步骤、预期结果和实际结果。启动问题可补充「启动诊断.cmd」生成的报告；提交前请检查并移除个人路径等隐私信息。需要提供原片时，优先使用能够复现问题的合成或可公开样例。
+
+## 主窗口直接 HDR 调色
+
+工具栏「主画布 HDR」在原画布开启 HDR；需先开启 Windows HDR。可直接调整曝光、颜色、曲线及局部影调，使用原有取样、缩放、撤销和照片导航。再次点击回到 SDR；系统 HDR 关闭或显示设备失效会自动回退。显示开关不改配方或导出格式。参考白固定 203 nits，SDR 高光柔化不参与 HDR 呈现。
+
+直方图为 SDR 导出统计；HDR 开启时暂不可用 SDR 输出色域预览和越界叠加。大图 HDR 100% 预览受 768 MB 临时预算保护，超限自动回到适应窗口；导出尺寸不受影响。HDR 硬件视觉验收仍待完成。
+
+显示器报告峰值缺失、低于 80 nit 或高于 10000 nit 时，HDR 预览暂按 1000 nit 估计，状态栏会明确提示。请使用 Windows HDR 校准核实屏幕能力；该估计不改动调色参数或 HDR 导出数据。
+
+## 统一 TIFF 导出
+
+顶部「导出 TIFF…」及 Ctrl+Shift+S 的保存窗口，在「保存类型」中提供 SDR TIFF - 16bit 和 HDR TIFF - Float32。主画布 HDR 开启时默认选中 HDR；可手动切回 SDR。HDR 使用浮点线性 TIFF、嵌入线性 ICC 并保留超过参考白的亮部。文件菜单原有 HDR 入口也使用此窗口。普通整卷／批量导出仍为 SDR。
+
+## Windows HDR 成品导出
+
+「导出 TIFF / HDR…」新增 Windows HDR - JPEG XR (*.jxr)。主画布 HDR 开启时默认选中 JXR；HDR TIFF 仍可选，文件菜单「导出线性 HDR TIFF」默认选择 TIFF。JXR 使用 Windows 原生 WIC 编码器，工作空间转换为线性 sRGB 后按 203/80 缩放为 scRGB 绝对亮度单位，保留超过 1 的数据，不烘焙当前屏幕的高光肩部。
+
+JXR 采用编码器的 Lossless 选项，但浮点预处理存在精度量化，不承诺原浮点位逐字节一致；HDR TIFF 继续用作浮点编辑母版。JXR 面向 Windows HDR 查看，不能保证所有平台都能打开。不同查看器仍可能采用不同高光映射，需在目标软件实测。原生编码/解码的数值和保存窗口路径验证已通过。用户已用 Windows「照片」打开同图 JXR，反馈亮度更接近 FilmInvert 预览；这是用户目视反馈，尚未进行仪器测量或跨设备验收。JXR 暂不支持重新导入 FilmInvert，继续编辑请保留工程和 TIFF 母版。
+
+## 首次查看显影与帧导航
+
+新导入的负片在底部帧导航中先显示带色罩的实际原片。每帧首次查看及每次切换到该帧时播放 1.6 秒从左向右柔边显影，RGB 同步还原；动画结束后，该帧缩略图更新为当前正片。其余未查看帧仍显示原片。已显影记录按原片内容、输入方式和帧位置保存到当前用户配置，每次切到另一帧都会重播；重开图片、恢复已有编辑或工程时不重播；修改原片内容或重新划分的帧使用新身份。
+
+鼠标、滚轮、键盘或调色操作可跳过动画，并显示当前正片；关闭「视图→首次查看显影动画」或 Windows 动画时直接显示正片。正像模式不播放。不改动调色参数、直方图、取样或导出像素。适应窗口与 100% 可见区域支持过渡，单次原片预览预算 210 万像素；HDR 临时显示缓存上限 8 MP，超限直接显示结果。本功能不增加 DNG 压缩格式的解码兼容性。
+
+继续沿用 rc7 的缓存纹理、局部柔边合成、HDR 后台准备和 16 ms 调度优化。HDR 准备完成后才开始 1.6 秒计时；视口变化或进一步操作可取消准备。过渡使用显示线性 scRGB 缓存，结束恢复实际编辑结果。
+
+
+## 启动显影
+
+软件启动时显示用户提供的红白胶片吉祥物 Logo，以 1.2 秒从左向右柔边显影，随后淡出进入编辑界面。处理模块在后台导入，主窗口在 Qt 主线程创建；初始化超过动画时长时直接衔接，不额外等待另一轮。点击启动画面或 Esc 可跳过，并遵循 Windows 动画设置。启动图片参数仍只打开一次；切图动画继续为 1.6 秒。启动 Logo 的显示尺寸副本随应用提供，原始图片未修改。

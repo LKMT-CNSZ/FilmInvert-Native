@@ -6,7 +6,7 @@ from file_io import io_path
 
 FIELDS={'style':('mode','film','slope','d_min','saturation','crosstalk'),
         'wb':('temp','tint','wb_gain'),'exposure':('exposure',),
-        'tone':('black','white','curve','hsl'),'output':('output_space',),
+        'tone':('black','white','curve','hsl','tone_shadows','tone_highlights','tone_whites','tone_blacks','tone_rolloff','local_tone','local_radius','local_detail'),'output':('output_space',),
         'calibration':('calibration','calibration_strength')}
 DEFAULT={'input_mode':'single','input_color':'legacy','working_space':'srgb','method':'auto',
          'fields':['style','output'],'sync_mode':'absolute','exposure_delta':0.,

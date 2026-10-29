@@ -68,6 +68,7 @@ STATE: dict = {
     "frame_params": {},
     "roll_params": None,
     "auto_meter": True,
+    "default_meter_mode":"legacy",
 }
 
 
@@ -127,6 +128,8 @@ def install_loaded(path, ld, input_mode='auto', manual=None, legacy_detection=Fa
     if input_mode not in ('auto','single','strip'):raise ValueError('输入模式无效')
     if manual is not None and input_mode!='strip':raise ValueError('手动选框需要整条输入模式')
     lin = ld.linear
+    STATE['default_meter_mode']='edges'
+    if ld.hdr_kind and input_mode=='auto':input_mode='single'
     manual=strip.normalize_manual(manual,lin.shape) if manual is not None else None
     if manual is not None:
         layout=strip.manual_layout(lin,manual)
@@ -152,8 +155,8 @@ def install_loaded(path, ld, input_mode='auto', manual=None, legacy_detection=Fa
     if is_strip:
         si, fi, arr = strip.extract_one(lin, layout, 0)
         base = layout.bases[si]
-        _, span = core.auto_anchor(arr, base)
-        p = Params(mode="color_negative", base=base, anchor=None, span=span, slope=1.60)
+        _, span = core.auto_anchor(arr, base,'edges')
+        p = Params(mode="color_negative", base=base, anchor=None, span=span, slope=1.60,meter_mode='edges')
         p.working_space=ld.working_space
         with LOCK:
             THUMB_CACHE.clear()
@@ -171,6 +174,7 @@ def install_loaded(path, ld, input_mode='auto', manual=None, legacy_detection=Fa
                 "height": arr.shape[0],
                 "is_raw": ld.is_raw,
                 "note": ld.note,
+            "hdr_kind":ld.hdr_kind,
                 'input_color':ld.color_info,
                 "has_rawpy": HAVE_RAWPY,
                 "input_mode": input_mode,
@@ -191,8 +195,10 @@ def install_loaded(path, ld, input_mode='auto', manual=None, legacy_detection=Fa
         return STATE["info"]
 
     base = core.auto_base(lin)
-    anchor, span = core.auto_anchor(lin, base)
-    p = Params(mode="color_negative", base=base, anchor=anchor, span=span, slope=1.60)
+    anchor, span = core.auto_anchor(lin,base,'edges')
+    p = Params(mode="color_negative", base=base, anchor=anchor, span=span, slope=1.60,meter_mode='edges')
+    if ld.hdr_kind:p.scene_hdr=True
+    if ld.hdr_kind=='positive':p=Params(mode='positive',meter_mode='edges',scene_hdr=True,black=0.,white=1.,tone_rolloff=.75)
     p.working_space=ld.working_space
 
     with LOCK:
@@ -213,6 +219,7 @@ def install_loaded(path, ld, input_mode='auto', manual=None, legacy_detection=Fa
             "height": ld.height,
             "is_raw": ld.is_raw,
             "note": ld.note,
+            "hdr_kind":ld.hdr_kind,
             'input_color':ld.color_info,
             "has_rawpy": HAVE_RAWPY,
             "input_mode": input_mode,
@@ -266,7 +273,7 @@ def prepare_params(p, img=None, layout=None, index=None):
 
 def corrected_input(arr,p):
     return restoration.correct_light(arr,p.flat_field if p.flat_mode != 'off' else None,
-                                     p.flat_strength,p.vignette)
+                                     p.flat_strength,p.vignette,hdr=p.scene_hdr)
 
 
 LAST_EXPORT=None
@@ -316,7 +323,7 @@ def do_flat_meter(data):
         p.base = layout.bases[strip.frame_boxes(layout)[index][0]]
     else:
         p.base = core.auto_base(corrected)
-    p.anchor,p.span = core.auto_anchor(corrected,p.base)
+    p.anchor,p.span = core.auto_anchor(corrected,p.base,p.meter_mode)
     with LOCK:
         STATE['params'] = p
     return {'params':p.__dict__}
@@ -355,11 +362,12 @@ def do_thumb(index: int) -> bytes:
     base = layout.bases[si]
     small = downscale(arr, 320)
     _, span = core.auto_anchor(small, base)
-    p = params_from(saved or roll) if saved is not None or roll is not None else Params()
+    p = params_from(saved or roll) if saved is not None or roll is not None else Params(meter_mode=STATE.get('default_meter_mode','legacy'))
     if saved is None:
         p.base, p.anchor = base, None
         if auto_meter or roll is None:
             p.span = span
+    if saved is None and (auto_meter or roll is None):_,p.span=core.auto_anchor(small,base,p.meter_mode)
     p = prepare_params(p,img,layout,index)
     out = core.process(small, p)
     jpg = encode_preview(out)
@@ -433,7 +441,7 @@ def do_frame(index: int, current: dict | None = None, keep_params: bool = True,
     elif roll is not None:
         p = params_from(roll)
     else:
-        p = Params(span=span)
+        p = Params(span=span,meter_mode=STATE.get('default_meter_mode','legacy'))
     p.local_edits=copy.deepcopy((saved or {}).get('local_edits',[]))
     if not keep_params and saved is not None:
         base = p.base or base
@@ -441,12 +449,13 @@ def do_frame(index: int, current: dict | None = None, keep_params: bool = True,
         p.base, p.anchor = list(base), None
         if auto_meter:
             p.span = span
+    if auto_meter and not (not keep_params and saved is not None):_,p.span=core.auto_anchor(arr,p.base,p.meter_mode)
     p = prepare_params(p,img,layout,index)
     if not (not keep_params and saved is not None):
         if p.flat_mode == 'strip':
             p.base = strip_field(img,layout,index)[1]
         if auto_meter and (p.flat_mode != 'off' or p.vignette > 0):
-            _,p.span = core.auto_anchor(corrected_input(arr,p),p.base)
+            _,p.span = core.auto_anchor(corrected_input(arr,p),p.base,p.meter_mode)
 
     with LOCK:
         STATE["frame_index"] = index
@@ -484,7 +493,7 @@ def do_sample(x: float, y: float, kind: str, current: dict | None = None) -> dic
         if core.base_clipped_channels(decoded):
             raise ValueError('片基取样已到解码端点（通道剪裁），未应用；请换一处未剪裁的未曝光片基。RAW 可尝试 ProPhoto 工作空间后重新检查。')
         p.base = val
-        _, span = core.auto_anchor(corrected, val)
+        _, span = core.auto_anchor(corrected, val,p.meter_mode)
         p.span = span
     elif kind == "anchor":
         p.anchor = val
@@ -547,10 +556,10 @@ def do_export(params: dict) -> dict:
 
 
 def write_recipe(path: str, p: Params, source: str, frame: int) -> None:
-    with open(path, 'w', encoding='utf-8') as f:
-        json.dump({"format": "film-invert-recipe", "version": 1,
-                   "application": VERSION, "source": source, "frame": frame,
-                   "params": p.__dict__}, f, ensure_ascii=False, indent=2, allow_nan=False)
+    # Keep strip/batch recipes on the same version and source-geometry contract.
+    from desktop_model import recipe
+    with open(path, 'w', encoding='utf-8') as stream:
+        json.dump(recipe(p.__dict__,source,frame),stream,ensure_ascii=False,indent=2,allow_nan=False)
 
 
 def do_apply_all(data: dict) -> dict:
@@ -566,10 +575,10 @@ def do_apply_all(data: dict) -> dict:
             if not edits:continue
             si,_,arr=strip.extract_one(STATE['strip_img'],STATE['strip_layout'],i)
             fp=copy.deepcopy(p);fp.local_edits=edits;fp.base,fp.anchor=list(STATE['strip_layout'].bases[si]),None
-            if data.get('auto_meter',True):_,fp.span=core.auto_anchor(arr,fp.base)
+            if data.get('auto_meter',True):_,fp.span=core.auto_anchor(arr,fp.base,fp.meter_mode)
             fp=prepare_params(fp,STATE['strip_img'],STATE['strip_layout'],i)
             if fp.flat_mode=='strip':fp.base=strip_field(STATE['strip_img'],STATE['strip_layout'],i)[1]
-            if data.get('auto_meter',True) and (fp.flat_mode!='off' or fp.vignette>0):_,fp.span=core.auto_anchor(corrected_input(arr,fp),fp.base)
+            if data.get('auto_meter',True) and (fp.flat_mode!='off' or fp.vignette>0):_,fp.span=core.auto_anchor(corrected_input(arr,fp),fp.base,fp.meter_mode)
             STATE['frame_params'][i]=copy.deepcopy(fp.__dict__)
         STATE['params'] = p
         STATE['auto_meter'] = bool(data.get('auto_meter', True))
@@ -606,16 +615,16 @@ def do_batch(data: dict) -> dict:
                 if index in saved:
                     fp = params_from(saved[index])
                 else:
-                    fp = params_from(roll) if roll is not None else Params()
+                    fp = params_from(roll) if roll is not None else Params(meter_mode=STATE.get('default_meter_mode','legacy'))
                     fp.base, fp.anchor = layout.bases[si], None
                     if auto_meter or roll is None:
-                        _, fp.span = core.auto_anchor(arr, fp.base)
+                        _, fp.span = core.auto_anchor(arr, fp.base,fp.meter_mode)
                 dst = os.path.join(directory, f'{stem}-f{index+1:02d}-positive.tif')
                 fp = prepare_params(fp,img,layout,index)
                 if index not in saved and fp.flat_mode == 'strip':
                     fp.base = strip_field(img,layout,index)[1]
                     if auto_meter:
-                        _,fp.span = core.auto_anchor(corrected_input(arr,fp),fp.base)
+                        _,fp.span = core.auto_anchor(corrected_input(arr,fp),fp.base,fp.meter_mode)
                 fp.output_space = export_space
                 export_pixels(dst,arr,fp)
                 write_recipe(dst + '.json', fp, src, index+1)

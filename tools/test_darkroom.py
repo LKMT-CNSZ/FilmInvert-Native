@@ -4,9 +4,12 @@ import os,sys,time,tempfile
 os.environ['QT_QPA_PLATFORM']='offscreen'
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 import native_app as ui
-from PySide6.QtCore import Qt,QPointF,QPoint,QEvent
-from PySide6.QtGui import QWheelEvent,QIcon,QPixmap
+from PySide6.QtCore import Qt,QPointF,QPoint,QEvent,QRect
+from PySide6.QtGui import QWheelEvent,QIcon,QPixmap,QImage,QPainter,QFont,QFontDatabase
+from PySide6.QtWidgets import QStyleOptionViewItem,QStyle
 app=ui.QApplication.instance() or ui.QApplication([])
+for font_path in ('C:/Windows/Fonts/segoeui.ttf','C:/Windows/Fonts/msyh.ttc'):
+    if Path(font_path).is_file():QFontDatabase.addApplicationFont(font_path)
 (ROOT/'build/tests').mkdir(parents=True,exist_ok=True)
 with tempfile.TemporaryDirectory(dir=ROOT/'build/tests',prefix='darkroom-') as temporary:
     profile=Path(temporary)/'profile';window=ui.MainWindow(profile);window.show();app.processEvents()
@@ -56,6 +59,25 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build/tests',prefix='darkroom-') as t
     app.sendEvent(strip.viewport(),wheel);app.processEvents();assert strip.horizontalScrollBar().value()>0
     assert icon.pixmap(ui.QSize(112,76),QIcon.Mode.Normal).toImage()==icon.pixmap(ui.QSize(112,76),QIcon.Mode.Selected).toImage()
     strip.close();strip.deleteLater()
+    # Selection and incoming thumbnail sizes cannot expand into adjacent cells.
+    nav=ui.FilmstripList();nav.setViewMode(ui.QListView.ViewMode.IconMode);nav.setFlow(ui.QListView.Flow.LeftToRight)
+    nav.setWrapping(False);nav.setGridSize(ui.QSize(148,106));nav.setSpacing(5);nav.setIconSize(ui.QSize(112,76));nav.resize(460,135)
+    for name in ('LZY_3293.NEF','LZY_3294.NEF','非常长的扫描文件名_123456789.NEF'):nav.addItem(ui.QListWidgetItem(icon,name))
+    nav.show()
+    for size in (9,14,20):
+        font=QFont(nav.font());font.setPointSize(size);nav.setFont(font)
+        for selected in range(3):
+            nav.setCurrentRow(selected);nav.item(selected).setIcon(icon);nav.doItemsLayout();app.processEvents()
+            rects=[nav.visualItemRect(nav.item(i)) for i in range(3)]
+            assert all(r.width()<=148 and r.height()<=106 for r in rects)
+            assert not rects[0].intersects(rects[1]) and not rects[1].intersects(rects[2])
+            image=QImage(220,140,QImage.Format.Format_RGB32);image.fill(0xffff00ff)
+            painter=QPainter(image);option=QStyleOptionViewItem();option.initFrom(nav);option.rect=QRect(20,10,138,96)
+            option.state|=QStyle.StateFlag.State_Selected
+            nav.itemDelegate().paint(painter,option,nav.model().index(selected,0));painter.end()
+            for x,y in ((0,0),(19,50),(158,50),(100,106),(219,139)):assert image.pixel(x,y)==0xffff00ff
+    font.setPointSize(11);nav.setFont(font);nav.setCurrentRow(0);nav.doItemsLayout();app.processEvents()
+    nav.grab().save(str(ROOT/'build/filmstrip-fixed.png'));nav.close();nav.deleteLater()
     # Once migrated, deliberately hidden panels stay hidden across restarts.
     window.nav_dock.hide();window.loaded=False;window.close();app.processEvents()
     restored=ui.MainWindow(profile);restored.show();app.processEvents();assert not restored.nav_dock.isVisible()

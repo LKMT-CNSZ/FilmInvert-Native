@@ -21,7 +21,7 @@ def engine_signature():
     import numpy
     import PIL
     root=Path(__file__).resolve().parent
-    files=('core.py','viewport_render.py','region_context.py','calibration_solver.py','chart_metrics.py','export_policy.py','local_edits.py','calibration.py','restoration.py','colorio.py','input_color.py','working_color.py','geometry.py','perspective.py','server.py','strip.py','loader.py','tiffio.py','tiffread.py','desktop_model.py','document_cache.py','studio_worker.py','file_io.py')
+    files=('hdr_io.py','hdr_color.py','metering.py','tone_mapping.py','core.py','viewport_render.py','region_context.py','calibration_solver.py','chart_metrics.py','export_policy.py','local_edits.py','calibration.py','restoration.py','colorio.py','input_color.py','working_color.py','geometry.py','perspective.py','server.py','strip.py','loader.py','tiffio.py','tiffread.py','desktop_model.py','document_cache.py','studio_worker.py','file_io.py')
     versions={'python':list(sys.version_info[:3]),'numpy':numpy.__version__,'pillow':PIL.__version__,
               'files':{name:sha256(root/name) for name in files}}
     dependencies=root.parent/'dependencies.json'

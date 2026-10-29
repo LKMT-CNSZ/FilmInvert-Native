@@ -1,5 +1,7 @@
 # FilmInvert Native 3.0.0 启动与分发说明
 
+**3.1.0-rc12 功能预览版：**新增片边排除测光、单张高光/阴影/黑白场、局部色调映射、多曝光 HDR 合成、线性 ICC float32 HDR TIFF 和 Windows 原生 HDR 预览。用法及限制见 [HDR 指南](HDR-GUIDE.md)。HDR 显示目前为实验功能，已验证 FP16 通道和 SDR 拒绝，HDR 硬件视觉验收尚待完成。
+
 完整安装或解压即可运行，无需另装 Python/Qt。安装版通过开始菜单运行随包 runtime/pythonw.exe -I -m film_invert_launcher；便携版第一次使用「启动胶片工作室.cmd」，之后可使用自动生成的本机快捷方式。移动便携目录后用 CMD 再生成入口。安装版入口由安装程序管理，不在安装目录自动生成快捷方式。
 
 保留整个目录结构，勿混用旧版 EXE 或复制单独的 runtime。用户数据/默认输出位置见 DESKTOP-README.md；帮助菜单可打开实际用户数据目录。安装/卸载不迁移或删除旧安装、原片及已有成品。

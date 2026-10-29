@@ -1,4 +1,6 @@
-# FilmInvert Native 3.0.0 批量工作流操作手册
+# FilmInvert Native 3.1.0-rc12 批量工作流操作手册
+
+**3.1.0-rc12 功能预览版：**新增片边排除测光、单张高光/阴影/黑白场、局部色调映射、多曝光 HDR 合成、线性 ICC float32 HDR TIFF 和 Windows 原生 HDR 预览。用法及限制见 [HDR 指南](HDR-GUIDE.md)。HDR 显示目前为实验功能，已验证 FP16 通道和 SDR 拒绝，HDR 硬件视觉验收尚待完成。
 
 ## 筛选、快捷键与复核入口
 

@@ -54,7 +54,7 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build/tests',prefix='batch-') as temp
     first=store.get(batch)['items'][0];second=store.get(batch)['items'][1]
     edited=copy.deepcopy(second['snapshot']);p=edited['frames']['0'];p.update(exposure=.28,rotation=90,straighten=.4,crop=[.05,.05,.95,.95],
        local_edits=[dict(kind='brush',points=[[.5,.5]],radius=.1,ev=.2)])
-    edited['frames']['0']=model.params(p).__dict__;edited['version']=5;studio.capture(edited);store.adopt(batch,ids[1],edited)
+    edited['frames']['0']=model.params(p).__dict__;edited['version']=8;studio.capture(edited);store.adopt(batch,ids[1],edited)
     ref=copy.deepcopy(first['snapshot']);ref['frames']['0']['curve']=[[0,0],[.5,.62],[1,1]];ref['frames']['0']['exposure']=.5
     studio.capture(ref);store.adopt(batch,ids[0],ref)
     store.update_items(batch,ids[:2],group='卷 A');store.update_items(batch,ids[2:4],group='卷 B')
@@ -83,7 +83,7 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build/tests',prefix='batch-') as temp
     assert data['items'][1]['snapshot']['frames']['0']['base']==data['items'][0]['snapshot']['frames']['0']['base']
     assert data['items'][2]['snapshot']['frames']['0']['base']==before[2]['frames']['0']['base']
     # A different working space fails instead of silently copying incompatible color.
-    item=copy.deepcopy(data['items'][3]);item['snapshot']['input']['working_space']='prophoto';item['snapshot']['version']=4
+    item=copy.deepcopy(data['items'][3]);item['snapshot']['input']['working_space']='prophoto';item['snapshot']['version']=8
     for p in item['snapshot']['frames'].values():p['working_space']='prophoto'
     studio.capture(item['snapshot']);store.adopt(batch,ids[3],item['snapshot']);data=run('style',[ids[3]])
     assert '工作空间' in data['items'][3]['error']

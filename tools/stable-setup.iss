@@ -2,12 +2,18 @@
 #ifndef BundleDir
   #define BundleDir AddBackslash(SourcePath) + "..\dist\" + AppVersion + "-compat\FilmInvertNative"
 #endif
+#ifndef AppFileVersion
+  #define AppFileVersion AppVersion
+#endif
+#ifndef ReleaseDate
+  #define ReleaseDate "20261028"
+#endif
 [Setup]
 AppId=FilmInvertNative.Stable.{#AppVersion}
 AppName=FilmInvert Native
 AppVersion={#AppVersion}
 AppVerName=FilmInvert Native {#AppVersion}
-VersionInfoVersion={#AppVersion}
+VersionInfoVersion={#AppFileVersion}
 VersionInfoDescription=FilmInvert Native Windows x64 Setup
 DefaultDirName={localappdata}\Programs\FilmInvert Native\{#AppVersion}
 DefaultGroupName=FilmInvert Native {#AppVersion}
@@ -23,7 +29,7 @@ AllowNoIcons=yes
 SetupIconFile=..\assets\film-invert.ico
 UninstallDisplayIcon={app}\app\assets\film-invert.ico
 OutputDir=..\release
-OutputBaseFilename=FilmInvert-Native-{#AppVersion}-setup-win64-20261028
+OutputBaseFilename=FilmInvert-Native-{#AppVersion}-setup-win64-{#ReleaseDate}
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern

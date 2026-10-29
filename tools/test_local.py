@@ -61,8 +61,8 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build/tests',prefix='local-') as tmp:
  assert np.array_equal(core.process(lin,model.params(p),'prophoto'),expected)
  dest=folder/'result.tif';model.export_image(dest,p)
  assert np.array_equal(read_tiff(str(dest)),(np.clip(expected,0,1)*65535+.5).astype(np.uint16))
- assert json.loads(Path(str(dest)+'.json').read_text('utf-8'))['version']==3
- saved=folder/'local.filmproj';model.save_project(saved,p);assert model.read_project(saved)['version']==5
+ assert json.loads(Path(str(dest)+'.json').read_text('utf-8'))['version']==6
+ saved=folder/'local.filmproj';model.save_project(saved,p);assert model.read_project(saved)['version']==8
  restored=model.open_project(saved);assert restored['params']['local_edits']==le.normalize(p['local_edits'])
  assert np.array_equal(core.process(model.engine.STATE['full'],model.params(restored['params']),'prophoto'),expected)
  other=model.change_frame(1,p,True,False)['params'];assert other['local_edits']==[]

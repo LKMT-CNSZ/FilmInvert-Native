@@ -90,8 +90,8 @@ def main():
             create(BUNDLE)
         except OSError:
             pass  # Read-only folders still launch; the portable CMD remains usable.
-        import native_app
-        return native_app.main()
+        from native_startup import run
+        return run(sys.argv[1:],BUNDLE)
     except Exception:
         error=traceback.format_exc();target=report_path()
         target.write_text(json.dumps({'status':'startup_failed','python':sys.version,'error':error},ensure_ascii=False,indent=2),encoding='utf-8')

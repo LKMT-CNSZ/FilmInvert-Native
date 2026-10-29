@@ -43,12 +43,12 @@ def frame_parameters(snapshot,index):
     si,_,array=strip.extract_one(engine.STATE['strip_img'],layout,index)
     if str(index) in saved:p=model.params(saved[str(index)])
     else:
-        roll=snapshot.get('roll_params');p=model.params(roll or {});p.base,p.anchor=layout.bases[si],None
-        if snapshot['options']['auto_meter'] or roll is None:_,p.span=core.auto_anchor(array,p.base)
+        roll=snapshot.get('roll_params');p=model.params(roll or {'meter_mode':model.snapshot_meter_mode(snapshot)});p.base,p.anchor=layout.bases[si],None
+        if snapshot['options']['auto_meter'] or roll is None:_,p.span=core.auto_anchor(array,p.base,p.meter_mode)
     p=engine.prepare_params(p,engine.STATE['strip_img'],layout,index)
     if str(index) not in saved and p.flat_mode=='strip':
         p.base=engine.strip_field(engine.STATE['strip_img'],layout,index)[1]
-        if snapshot['options']['auto_meter']:_,p.span=core.auto_anchor(engine.corrected_input(array,p),p.base)
+        if snapshot['options']['auto_meter']:_,p.span=core.auto_anchor(engine.corrected_input(array,p),p.base,p.meter_mode)
     p.output_space=saved[str(snapshot['current_frame'])].get('output_space','srgb')
     return array,p
 

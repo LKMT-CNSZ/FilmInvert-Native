@@ -139,7 +139,7 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build/tests',prefix='perspective-') a
     p=model.params(edited);sx,sy=geometry.source_point(.3,.6,model.engine.STATE['preview'].shape,edited)
     assert np.allclose(model.sample(edited,.3,.6,'base')['base'],core.sample_patch(model.engine.corrected_input(original,p),sx,sy,10),atol=1e-6)
     project=folder/'perspective.filmproj';window.save_project_to(str(project));idle()
-    saved=model.read_project(project);assert saved['version']==7
+    saved=model.read_project(project);assert saved['version']==8
     bad=copy.deepcopy(saved);bad['version']=6;model.write_json(folder/'old-version.filmproj',bad)
     before=model.project_signature(model.project_snapshot(edited))
     try:model.open_project(folder/'old-version.filmproj')
@@ -148,7 +148,7 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build/tests',prefix='perspective-') a
     assert model.project_signature(model.project_snapshot(edited))==before
     window.reset_geometry();idle();assert window.p['perspective'] is None
     window.open_project_path(str(project));idle();assert window.p['perspective']==spec
-    recipe=model.recipe(window.p);assert recipe['version']==5 and model.recipe_params(recipe)['perspective']==spec
+    recipe=model.recipe(window.p);assert recipe['version']==6 and model.recipe_params(recipe)['perspective']==spec
     bad=copy.deepcopy(recipe);bad['version']=4
     try:model.recipe_params(bad)
     except ValueError:pass
@@ -159,7 +159,7 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build/tests',prefix='perspective-') a
     expected=(np.clip(core.process(original,model.params(edited)),0,1)*65535+.5).astype(np.uint16)
     assert np.array_equal(read_tiff(output),expected)
     with Image.open(output) as im:assert im.info.get('icc_profile')
-    assert json.loads(Path(str(output)+'.json').read_text('utf-8'))['version']==5
+    assert json.loads(Path(str(output)+'.json').read_text('utf-8'))['version']==6
     project_transfer.pack(snapshot,folder/'perspective.filmtransfer')
     moved=project_transfer.unpack(folder/'perspective.filmtransfer',folder/'moved')
     assert model.open_project(moved['project'])['params']['perspective']==spec

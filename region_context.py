@@ -15,6 +15,8 @@ class Context:
         if self.h*self.w>64_000_000 and (p.dust_strength>0 or (p.channel_repair and p.mode=='color_negative') or p.black is None or p.white is None):raise ValueError('全图上下文统计超过 6400 万像素预算')
         if p.channel_repair and p.mode=='color_negative':self.prepare_repair()
         levels(source,p,self.clean,self.repair,self.check)
+        import tone_mapping
+        self.tone=tone_mapping.local_context(source,self.clean,light,p,self.repair) if tone_mapping.local_active(p) else None
         if p.dust_strength>0:self.prepare_dust()
     def check(self):
         if self.cancel is not None and self.cancel.is_set():raise InterruptedError('区域预览已取消')
@@ -40,7 +42,8 @@ class Context:
         x0,y0,x1,y1=box;out=np.empty((y1-y0,x1-x0,3),np.float32)
         for y in range(y0,y1,128):
             self.check();raw=self.light(self.source,self.p,(x0,y,x1,min(y1,y+128)))
-            out[y-y0:y-y0+128]=core.process(raw,self.clean,self.p.working_space,repair_context=self.repair)
+            out[y-y0:y-y0+128]=core.process(raw,self.clean,self.p.working_space,repair_context=self.repair,
+                tone_context=self.tone,tone_box=(x0,y,x1,min(y1,y+128)))
         return out
     def median(self,box):
         x0,y0,x1,y1=box;r=self.p.dust_radius;k=r*2+1

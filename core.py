@@ -131,6 +131,16 @@ class Params:
     exposure: float = 0.0       # 以 stop 计
     black: float | None = None  # 黑场（E 域，None = 自动分位）
     white: float | None = None  # 白场
+    meter_mode: str = 'legacy'  # Old recipes retain their original statistics.
+    tone_shadows: float = 0.0
+    tone_highlights: float = 0.0
+    tone_whites: float = 0.0
+    tone_blacks: float = 0.0
+    tone_rolloff: float = 0.0
+    local_tone: float = 0.0
+    local_radius: float = 0.03
+    local_detail: float = 0.0
+    scene_hdr: bool = False
     temp: float = 0.0           # -1..1  偏暖(+R) / 偏冷(+B)
     tint: float = 0.0           # -1..1  偏品(+R+B) / 偏绿(+G)
     saturation: float = 1.0
@@ -166,6 +176,14 @@ class Params:
         p.slope = float(np.clip(_num(p.slope, 1.60), 0.3, 3.0))
         p.d_min = float(np.clip(_num(p.d_min, 0.0), -0.5, 1.5))
         p.exposure = float(np.clip(_num(p.exposure, 0.0), -4.0, 4.0))
+        p.meter_mode = p.meter_mode if p.meter_mode in ('legacy','edges') else 'legacy'
+        p.scene_hdr=p.scene_hdr is True
+        for key in ('tone_shadows','tone_highlights','tone_whites','tone_blacks'):
+            setattr(p,key,float(np.clip(_num(getattr(p,key),0),-1,1)))
+        p.tone_rolloff=float(np.clip(_num(p.tone_rolloff,0),0,1))
+        p.local_tone=float(np.clip(_num(p.local_tone,0),0,1))
+        p.local_radius=float(np.clip(_num(p.local_radius,.03),.005,.075))
+        p.local_detail=float(np.clip(_num(p.local_detail,0),-1,1))
         p.temp = float(np.clip(_num(p.temp, 0.0), -1.0, 1.0))
         p.tint = float(np.clip(_num(p.tint, 0.0), -1.0, 1.0))
         p.saturation = float(np.clip(_num(p.saturation, 1.0), 0.0, 2.0))
@@ -380,9 +398,10 @@ def detect_channel_health(img: np.ndarray, threshold: float = 0.5) -> dict:
     }
 
 
-def auto_anchor(img: np.ndarray, base: list[float]) -> tuple[list[float], float]:
+def auto_anchor(img: np.ndarray, base: list[float], meter_mode='legacy') -> tuple[list[float], float]:
     """估最深黑：取最暗分位的中值，返回 (取样值, 相对密度跨度)。"""
-    small = img[::4, ::4]
+    import metering
+    small = metering.region(img,meter_mode)[::4, ::4]
     if small.shape[2] >= 3:
         d = to_density(small) - to_density(np.asarray(base, dtype=np.float32))
         rel = d.mean(axis=2)
@@ -416,7 +435,7 @@ def scene_linear(rgb: np.ndarray, p: Params, repair_context=None) -> np.ndarray:
     if x.ndim == 2:
         x = np.repeat(x[..., None], 3, axis=2)
     x = restoration.correct_light(x, p.flat_field if p.flat_mode != 'off' else None,
-                                  p.flat_strength, p.vignette)
+                                 p.flat_strength, p.vignette,hdr=p.scene_hdr)
     if p.flip:
         x = x[:, ::-1]
 
@@ -430,7 +449,7 @@ def scene_linear(rgb: np.ndarray, p: Params, repair_context=None) -> np.ndarray:
     if p.mode == "positive":
         # 正片 / 反转片：透射率本身就是场景亮度，不需要反相，
         # 只做黑场白场拉伸（翻拍时 no_auto_bright 会让最大值远低于 1）
-        e = np.clip(x, 0.0, 1.0)
+        e = np.maximum(x,0) if p.scene_hdr else np.clip(x, 0.0, 1.0)
     elif p.mode == "bw_negative":
         # 黑白：先合成单通道再走同一套密度逻辑
         g = luma(x,p.working_space) if x.shape[2] >= 3 else x[..., 0]
@@ -439,7 +458,7 @@ def scene_linear(rgb: np.ndarray, p: Params, repair_context=None) -> np.ndarray:
         db = float(to_density(np.array([np.mean(base)], dtype=np.float32))[0])
         rel = (d - db) - dmin
         norm = rel / span
-        norm = np.clip(norm, 0.0, 1.0)
+        norm = np.maximum(norm,0) if p.scene_hdr else np.clip(norm, 0.0, 1.0)
         e = np.power(10.0, -(1.0 - norm) * span * p.slope)
         e = e[..., None].repeat(3, axis=2)
     else:
@@ -473,10 +492,10 @@ def scene_linear(rgb: np.ndarray, p: Params, repair_context=None) -> np.ndarray:
             rel = rel @ m.T
 
         norm = rel / span
-        norm = np.clip(norm, 0.0, 1.0)
+        norm = np.maximum(norm,0) if p.scene_hdr else np.clip(norm, 0.0, 1.0)
         e = np.power(10.0, -(1.0 - norm) * span * p.slope)
 
-    return np.clip(e, 0.0, 8.0)
+    return np.maximum(e,0) if p.scene_hdr else np.clip(e, 0.0, 8.0)
 
 
 def estimate_wb(rgb: np.ndarray, p: Params, method='gray_world') -> list:
@@ -524,7 +543,7 @@ def wb_gain(p):
     return gain
 
 
-def working_linear(rgb: np.ndarray, p: Params, repair_context=None) -> np.ndarray:
+def working_linear(rgb: np.ndarray, p: Params, repair_context=None,tone_context=None,tone_box=None,unbounded=False) -> np.ndarray:
     """After WB/levels/exposure, before chart correction, encoding and styling."""
     p = p.normalized()
     e = scene_linear(rgb,p,repair_context)
@@ -536,8 +555,9 @@ def working_linear(rgb: np.ndarray, p: Params, repair_context=None) -> np.ndarra
     hi = float(p.white) if p.white is not None else None
     if lo is None or hi is None:
         lum = luma(e,p.working_space) if e.shape[2] >= 3 else e[..., 0]
-        q_lo = float(np.quantile(lum, 0.002))
-        q_hi = float(np.quantile(lum, 0.998))
+        import metering
+        q_lo,q_hi = metering.levels(lum,rgb[:,::-1] if p.flip else rgb,p.meter_mode)
+        q_lo,q_hi=float(q_lo),float(q_hi)
         if lo is None:
             lo = q_lo
         if hi is None:
@@ -546,14 +566,16 @@ def working_linear(rgb: np.ndarray, p: Params, repair_context=None) -> np.ndarra
         e = (e - lo) / (hi - lo)
 
     e = e * (2.0 ** p.exposure)
-    e = np.clip(e, 0.0, 1.0)
+    import tone_mapping
+    e = tone_mapping.apply(e,p,tone_context,tone_box)
+    e = np.maximum(e,0) if unbounded else np.clip(e, 0.0, 1.0)
     return e
 
 
-def process(rgb: np.ndarray, p: Params, target_space='srgb', repair_context=None) -> np.ndarray:
+def process(rgb: np.ndarray, p: Params, target_space='srgb', repair_context=None,tone_context=None,tone_box=None) -> np.ndarray:
     """线性 RGB → sRGB 显示域；输出色彩空间由导出器另行转换。"""
     p = p.normalized()
-    e = working_linear(rgb,p,repair_context)
+    e = working_linear(rgb,p,repair_context,tone_context,tone_box)
     if p.mode != 'bw_negative':
         e = calibration.apply(e,p.calibration,p.calibration_strength,p.working_space)
 

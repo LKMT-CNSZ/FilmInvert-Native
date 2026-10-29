@@ -56,7 +56,7 @@ def _light(source,p,box,turns=0):
     if p.vignette>0:
         vx=np.linspace(-1,1,w,dtype=np.float32)[sx];vy=np.linspace(-1,1,h,dtype=np.float32)[sy]
         out/=(1-np.float32(.7*p.vignette)*(vx*vx+vy*vy)/2)[...,None]
-    return np.clip(out,0,1).astype(np.float32)
+    return (np.maximum(out,0) if p.scene_hdr else np.clip(out,0,1)).astype(np.float32)
 
 
 def _plain(p):
@@ -76,7 +76,8 @@ def _levels(source,p,clean,repair_context=None,check=lambda:None):
         raw=_light(source,p,(0,top,w,min(h,top+128)))
         scene=core.scene_linear(raw,clean,repair_context)*core.wb_gain(clean)
         luminance[top:top+128]=core.luma(scene,p.working_space)
-    lo,hi=np.quantile(luminance,[.002,.998])
+    import metering
+    lo,hi=metering.levels(luminance,source[:,::-1] if p.flip else source,p.meter_mode)
     if p.black is None:clean.black=float(lo)
     if p.white is None:clean.white=float(hi)
 
@@ -85,7 +86,7 @@ def render(source,p,box,original=False,cancel=None):
     p=p.normalized();box,shape=box_for(source.shape,p.__dict__,box)
     global _CONTEXT,_CONTEXT_KEY
     clean=_plain(p);context=None
-    advanced=not original and (p.dust_strength>0 or p.local_edits or (p.channel_repair and p.mode=='color_negative') or (box[2]-box[0])*(box[3]-box[1])>1_000_000)
+    advanced=not original and (p.local_tone!=0 or p.local_detail!=0 or p.dust_strength>0 or p.local_edits or (p.channel_repair and p.mode=='color_negative') or (box[2]-box[0])*(box[3]-box[1])>1_000_000)
     if advanced:
         import region_context
         key=(id(source),repr(p.__dict__))

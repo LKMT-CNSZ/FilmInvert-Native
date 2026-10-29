@@ -7,7 +7,7 @@ from build_compat import ROOT,BUNDLE,VERSION,RELEASE_DATE,refresh_manifest,DOCUM
 def digest(path):
     with path.open('rb') as stream:return hashlib.file_digest(stream,'sha256').hexdigest()
 def stage():
-    assert VERSION in ('3.0.0','3.0.1')
+    assert VERSION in ('3.0.0','3.0.1','3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12')
     for folder in (BUNDLE,BUNDLE/'app'):
         for path in folder.glob('*.md'):
             if path.name not in DOCUMENTS:path.unlink()
@@ -31,7 +31,7 @@ def stage():
     return manifest
 
 def archive(path,items):
-    stamp=(2026,10,28,0,0,0)
+    stamp=(int(RELEASE_DATE[:4]),int(RELEASE_DATE[4:6]),int(RELEASE_DATE[6:8]),0,0,0)
     with zipfile.ZipFile(path,'w',zipfile.ZIP_DEFLATED,compresslevel=6,allowZip64=True) as z:
         for file,name in sorted(items,key=lambda row:row[1]):
             info=zipfile.ZipInfo(name,stamp);info.compress_type=zipfile.ZIP_DEFLATED;info.external_attr=0o100644<<16

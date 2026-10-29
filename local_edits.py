@@ -31,9 +31,10 @@ def normalize(edits):
         result.append(item)
     return result
 
-def apply(rgb,edits,space='srgb',flip=False,origin=(0,0),shape=None,source_reader=None):
+def apply(rgb,edits,space='srgb',flip=False,origin=(0,0),shape=None,source_reader=None,hdr=False):
     if not edits:return rgb
     import colorio
+    if hdr:import hdr_color as colorio
     h,w=shape or rgb.shape[:2];out=np.array(rgb,np.float32,copy=True)
     rx,ry=origin;rh,rw=rgb.shape[:2]
     for op in normalize(edits):

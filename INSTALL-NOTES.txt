@@ -1,8 +1,8 @@
-FilmInvert Native 3.0.0 正式版 · Windows x64
+FilmInvert Native 3.1.0-rc12 功能预览版 · Windows x64
 
 完整独立运行时，不需要另外安装 Python 或 Qt。仅为当前 Windows 用户安装。
 请选择新的空目录；安装程序拒绝覆盖非空目录，不直接升级或删除旧安装。
-默认安装：%LOCALAPPDATA%\Programs\FilmInvert Native\3.0.0
+默认安装：%LOCALAPPDATA%\Programs\FilmInvert Native\3.1.0-rc12
 用户数据：%LOCALAPPDATA%\FilmInvertNative\data
 默认输出：%LOCALAPPDATA%\FilmInvertNative\exports（可在软件中改选）
 帮助 → 打开用户数据目录，可定位会话、settings.ini 和 studio 照片库/队列。
@@ -15,4 +15,4 @@ FilmInvert Native 3.0.0 正式版 · Windows x64
 
 安装包和应用未获得发行者数字签名。官方 Python 文件保留上游原有签名。
 校验和不等于安全软件认证。本次未进行其他电脑、所有相机或设备色准认证。
-详情请阅读随包“软件介绍.html”及 RELEASE-VALIDATION-3.0.0.md。
+详情请阅读随包“软件介绍.html”及 RELEASE-VALIDATION-3.1.0-rc12.md。

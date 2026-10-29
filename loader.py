@@ -56,6 +56,8 @@ class Loaded:
     color: str = 'legacy'
     color_info: dict | None = None
     working_space: str = 'srgb'
+    hdr_kind: str = ''
+    hdr_metadata: dict | None = None
 
 
 def _decode_srgb8(arr: np.ndarray) -> np.ndarray:
@@ -126,6 +128,17 @@ def _load_raw(path: str,working_space='srgb') -> np.ndarray:
 
 def load(path: str, input_color='legacy',working_space='srgb') -> Loaded:
     if working_space not in ('srgb','prophoto'):raise ValueError('未知工作空间')
+    if os.path.splitext(path)[1].lower() in ('.tif','.tiff'):
+        import hdr_io
+        meta=hdr_io.metadata(path)
+        if meta is not None:
+            import working_color
+            lin=working_color.linear(read_tiff_linear(path),meta['space'],working_space)
+            if not np.isfinite(lin).all():raise ValueError('HDR TIFF 包含非法线性值')
+            clipped=float(np.mean(np.any(lin<0,axis=2)));lin=np.maximum(lin,0)
+            h,w=lin.shape[:2]
+            return Loaded(lin,path,w,h,False,'Linear float32 HDR TIFF',input_color,
+                {'selection':input_color,'encoding':'Linear float32 HDR TIFF','working_space':working_space,'clipped_fraction':clipped},working_space,meta['kind'],meta)
     if input_color!='legacy' or working_space!='srgb':
         from input_color import managed_load
         return managed_load(path,input_color,working_space)

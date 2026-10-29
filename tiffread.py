@@ -125,15 +125,18 @@ def _read_pixels(f,linear=False):
     t=_read_ifd(f,struct.unpack(bo+'I',f[4:8])[0])
     w,h=int(t[256]),int(t[257]);bps=t.get(258,8);bits=int(bps[0] if isinstance(bps,tuple) else bps)
     spp=int(t.get(277,1));comp=int(t.get(259,1));photo=int(t.get(262,2));pred=int(t.get(317,1));rows=int(t.get(278,h))
-    if w<1 or h<1 or rows<1 or spp not in (1,3,4) or bits not in (8,16):raise TiffError('不支持的 TIFF 尺寸 / 通道 / 位深')
+    if w<1 or h<1 or rows<1 or spp not in (1,3,4) or bits not in (8,16,32):raise TiffError('不支持的 TIFF 尺寸 / 通道 / 位深')
     if isinstance(bps,tuple) and any(b!=bits for b in bps):raise TiffError('不支持混合位深')
-    if int(t.get(284,1))!=1 or int(t.get(339,1)[0] if isinstance(t.get(339,1),tuple) else t.get(339,1))!=1:raise TiffError('仅支持 chunky 无符号整数 TIFF')
+    sample=int(t.get(339,1)[0] if isinstance(t.get(339,1),tuple) else t.get(339,1))
+    floating=bits==32 and sample==3
+    if int(t.get(284,1))!=1 or (not floating and (sample!=1 or bits==32)):raise TiffError('仅支持 chunky 整数或 float32 TIFF')
+    if floating and (pred!=1 or photo!=2 or spp!=3):raise TiffError('float32 TIFF 需要 RGB 且无 predictor')
     if photo not in (0,1,2) or (spp>1 and photo!=2):raise TiffError('不支持的 TIFF 色彩模型')
     if pred not in (1,2):raise TiffError('不支持的 Predictor')
     offsets=t.get(273);counts=t.get(279)
     offsets=(offsets,) if isinstance(offsets,int) else offsets;counts=(counts,) if isinstance(counts,int) else counts
     if not offsets or not counts or len(offsets)!=len(counts) or len(offsets)!=(h+rows-1)//rows:raise TiffError('TIFF 条带数量无效')
-    out=np.empty((h,w,1 if spp==1 else 3),np.float32 if linear else np.uint16)
+    out=np.empty((h,w,1 if spp==1 else 3),np.float32 if linear or floating else np.uint16)
     for i,(offset,count) in enumerate(zip(offsets,counts)):
         top=i*rows;nrows=min(rows,h-top);expected=nrows*w*spp*(bits//8)
         if offset<0 or count<0 or offset+count>len(f):raise TiffError('TIFF 条带超出文件范围')
@@ -152,7 +155,7 @@ def _read_pixels(f,linear=False):
         for row in range(0,nrows,step):
             nr=min(step,nrows-row);start=row*row_bytes;stop=start+nr*row_bytes
             block=f[offset+start:offset+stop] if raw is None else memoryview(raw)[start:stop]
-            a=np.frombuffer(block,dtype=bo+'u2' if bits==16 else 'u1').reshape(nr,w,spp)
+            a=np.frombuffer(block,dtype=bo+'f4' if floating else bo+'u2' if bits==16 else 'u1').reshape(nr,w,spp)
             if bits==8:
                 if pred==2:a=np.add.accumulate(a,axis=1,dtype=np.uint8)
                 a=a.astype(np.uint16)*257
@@ -160,7 +163,8 @@ def _read_pixels(f,linear=False):
                 a=np.add.accumulate(a,axis=1,dtype=np.uint16)
             if photo==0:a=65535-a
             target=out[top+row:top+row+nr];a=a[...,:target.shape[2]]
-            if linear:np.divide(a,np.float32(65535),out=target)
+            if floating:target[:]=a
+            elif linear:np.divide(a,np.float32(65535),out=target)
             else:target[:]=a
             del a,block
         del raw

@@ -2,6 +2,7 @@
 from pathlib import Path
 import copy,gc,hashlib,json,os,time,uuid
 import numpy as np
+import core
 from PIL import Image,ImageDraw,ImageCms
 from batch_store import BatchStore,FIELDS,clone,snapshot_key
 from studio_store import queue_lock
@@ -60,22 +61,23 @@ def sync_snapshot(snapshot,origin,reference,fields,sync_mode,delta,offset,shared
     out=clone(snapshot)
     for key,target in out['frames'].items():
         for group in fields:
-            for field in FIELDS[group]:target[field]=clone(reference[field])
+            for field in FIELDS[group]:target[field]=clone(reference.get(field,getattr(core.Params(),field)))
         if 'exposure' in fields:
             target['exposure']=(origin['frames'].get(key,target)['exposure']+delta if sync_mode=='relative' else reference['exposure'])+offset
         elif offset:target['exposure']=origin['frames'].get(key,target)['exposure']+offset
         if shared_base:
             from studio_worker import frame_parameters
             array,_=frame_parameters(snapshot,int(key));target['base']=clone(reference['base']);target['anchor']=None
-            _,target['span']=core.auto_anchor(array,target['base'])
+            _,target['span']=core.auto_anchor(array,target['base'],target.get('meter_mode','legacy'))
         out['frames'][key]=model.params(target).__dict__
     if out.get('roll_params'):
         # All prepared frames are materialized; roll defaults must not retain a
         # different future style if the project is later opened and edited.
         roll=out['roll_params']
         for group in fields:
-            for field in FIELDS[group]:roll[field]=clone(reference[field])
+            for field in FIELDS[group]:roll[field]=clone(reference.get(field,getattr(core.Params(),field)))
         out['roll_params']=model.params(roll).__dict__
+    if any(model.modern_tone(v) for v in [*out['frames'].values(),out.get('roll_params') or {}]):out['version']=8
     return out
 
 def thumbnail(studio,batch,item,snapshot,prefix):

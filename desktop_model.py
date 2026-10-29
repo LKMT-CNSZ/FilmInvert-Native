@@ -20,7 +20,7 @@ import geometry
 from loader import load
 from file_io import io_path,temporary_path
 
-VERSION = '3.0.1'
+VERSION = '3.1.0-rc12'
 from preview_cache import PreviewCache
 from document_cache import DocumentCache,BlobCache
 PREVIEWS=PreviewCache()
@@ -111,6 +111,7 @@ def thumbnails():
     layout = engine.STATE['strip_layout']
     if layout is None:
         return []
+    original_thumbnails()
     result=[]
     for index in range(layout.frame_count):
         key=json.dumps([engine.STATE.get('native_source'),engine.STATE.get('native_input'),layout.__dict__,index,
@@ -119,6 +120,22 @@ def thumbnails():
         if value is None:value=engine.do_thumb(index);NAV_THUMBS.put(key,value)
         else:
             with engine.LOCK:engine.THUMB_CACHE[index]=value
+        result.append(value)
+    return result
+
+def original_thumbnails():
+    """Cached unprocessed strip frames; never install frame parameters or meter."""
+    layout=engine.STATE['strip_layout']
+    if layout is None:return []
+    import colorio
+    result=[];space=engine.STATE.get('native_input',{}).get('working_space','srgb')
+    for index in range(layout.frame_count):
+        key=json.dumps(['original',engine.STATE.get('native_source'),engine.STATE.get('native_input'),layout.__dict__,index],sort_keys=True)
+        value=NAV_THUMBS.get(key)
+        if value is None:
+            arr=engine.downscale(strip.extract_one(engine.STATE['strip_img'],layout,index)[2],320)
+            encoded=core.srgb_encode(arr) if space=='srgb' else colorio.encode(arr,space)
+            value=engine.encode_preview(colorio.convert(encoded,'srgb',space));NAV_THUMBS.put(key,value)
         result.append(value)
     return result
 
@@ -273,7 +290,8 @@ def _restore_edits(data):
     p=engine.prepare_params(params(saved[index]))
     with engine.LOCK:
         engine.STATE.update(frame_params=saved,roll_params=clone(data.get('roll_params')),params=p,
-                            auto_meter=data.get('options',{}).get('auto_meter',True))
+                            auto_meter=data.get('options',{}).get('auto_meter',True),
+                            default_meter_mode=snapshot_meter_mode(data))
         engine.STATE['info'].update(base=p.base,anchor=p.anchor,span=p.span)
         engine.THUMB_CACHE.clear()
     return {'info':clone(engine.STATE['info']),'params':clone(p.__dict__),'thumbs':thumbnails()}
@@ -340,7 +358,7 @@ def reframe(spec,value,options=None):
                 arr=engine.STATE['full'];base=engine.STATE['params'].base
             if original is None:
                 p.base,p.anchor=base,None
-                _,p.span=core.auto_anchor(arr,base)
+                _,p.span=core.auto_anchor(arr,base,p.meter_mode)
             had_lighting=p.flat_mode!='off' or p.vignette>0
             cleared_lighting=False
             if not unchanged:
@@ -354,7 +372,7 @@ def reframe(spec,value,options=None):
                 # A base measured in corrected illumination cannot be reused as
                 # a raw-transmission base after the illumination field is removed.
                 p.base,p.anchor=base,None
-                _,p.span=core.auto_anchor(arr,base)
+                _,p.span=core.auto_anchor(arr,base,p.meter_mode)
             saved[str(i)]=p.__dict__
         roll=clone(before['roll_params'])
         if roll is not None:
@@ -393,6 +411,51 @@ def calibration_preview(value):
     return {'linear':linear,'working_space':p.working_space,'source_sha256':engine.STATE['native_source']['sha256'],
             'frame':engine.STATE['frame_index'],'parameter_signature':calibration_signature(p)}
 
+
+def hdr_edit_preview(value,full=False,original=False,region=None,cancel=None):
+    import hdr_color,working_color
+    p=engine.prepare_params(params(value));source=engine.STATE['full' if full else 'preview']
+    if full and source.shape[0]*source.shape[1]*96>768*1024*1024:
+        raise ValueError('HDR full-resolution preview exceeds the 768 MB temporary budget; use fit view')
+    if cancel is not None and cancel.is_set():raise InterruptedError('HDR preview canceled')
+    result=preview(value,full,original,region,cancel)
+    if original:
+        linear=source[:,::-1] if p.flip else source
+        peak=max(1.,float(np.max(linear)))
+        linear=geometry.apply(linear/peak,p.__dict__)*np.float32(peak)
+    else:linear=hdr_color.render(source,p)
+    if cancel is not None and cancel.is_set():raise InterruptedError('HDR preview canceled')
+    if 'region' in result:
+        x0,y0,x1,y1=result['region'];linear=linear[y0:y1,x0:x1]
+    result['hdr_linear']=working_color.linear(linear,p.working_space,'srgb')
+    return result
+
+
+def hdr_preview(value):
+    import hdr_color,working_color
+    p=engine.prepare_params(params(value))
+    linear=hdr_color.render(engine.STATE['preview'],p)
+    return working_color.linear(linear,p.working_space,'srgb')
+
+
+def export_hdr_view(path,value,cancel=None):
+    import hdr_color,hdr_jxr
+    p=engine.prepare_params(params(value))
+    if cancel is not None and cancel.is_set():raise InterruptedError('HDR export canceled')
+    linear=hdr_color.render(engine.STATE['full'],p)
+    return hdr_jxr.write(path,linear,p.working_space,cancel)
+
+
+def export_hdr(path,value,cancel=None):
+    import hdr_color,hdr_io
+    p=engine.prepare_params(params(value))
+    if cancel is not None and cancel.is_set():raise InterruptedError('HDR export canceled')
+    linear=hdr_color.render(engine.STATE['full'],p)
+    hdr_io.write(path,linear,p.working_space,'positive',
+        {'source':clone(engine.STATE.get('native_source')),'source_region':source_region(),'recipe':recipe(value),
+         'sdr_rolloff_bypassed':True},cancel)
+    return str(path)
+
 def fit_calibration(value,reference,points,name):
     if value.get('mode')=='bw_negative':raise ValueError('黑白负片不使用彩色色卡校正')
     p=engine.prepare_params(params(value))
@@ -406,8 +469,18 @@ def fit_calibration(value,reference,points,name):
 def apply_all(value,meter_each=True):
     return engine.do_apply_all({'params':value,'auto_meter':meter_each})
 
+def snapshot_meter_mode(snapshot):
+    values=[*snapshot['frames'].values(),snapshot.get('roll_params') or {}]
+    return 'edges' if any(v.get('meter_mode','legacy')=='edges' for v in values) else 'legacy'
+
+
+def modern_tone(value):
+    import tone_mapping
+    p=params(value)
+    return p.scene_hdr or p.meter_mode!='legacy' or tone_mapping.active(p)
+
 def recipe(value,source=None,index=None):
-    return {'format':'film-invert-recipe','version':5 if params(value).perspective is not None else (4 if input_geometry(engine.STATE.get('native_input',{})) else (3 if params(value).local_edits else (2 if params(value).working_space=='prophoto' else 1))),'application':VERSION,
+    return {'format':'film-invert-recipe','version':6 if modern_tone(value) else 5 if params(value).perspective is not None else (4 if input_geometry(engine.STATE.get('native_input',{})) else (3 if params(value).local_edits else (2 if params(value).working_space=='prophoto' else 1))),'application':VERSION,
             'source':source or engine.STATE['path'],
             'frame':index if index is not None else engine.STATE['frame_index']+1,
             'params':params(value).__dict__,
@@ -418,12 +491,13 @@ def recipe(value,source=None,index=None):
             'source_region':source_region(None if index is None else index-1)}
 
 def recipe_params(data):
-    if not isinstance(data,dict) or data.get('format')!='film-invert-recipe' or data.get('version') not in (1,2,3,4,5):
+    if not isinstance(data,dict) or data.get('format')!='film-invert-recipe' or data.get('version') not in (1,2,3,4,5,6):
         raise ValueError('不支持的配方格式')
-    if data['version']>=4 and data.get('source_region')!=source_region():raise ValueError('配方的输入片框校直不同，请先打开匹配工程')
+    if (data['version'] in (4,5) or data['version']==6 and (data.get('source_region') or {}).get('angle')) and data.get('source_region')!=source_region():raise ValueError('配方的输入片框校直不同，请先打开匹配工程')
     if not isinstance(data.get('params'),dict):raise ValueError('配方参数无效')
     if data['version']<3 and data['params'].get('local_edits'):raise ValueError('局部编辑需要配方版本 3')
     if data['version']<5 and data['params'].get('perspective') is not None:raise ValueError('透视校正需要配方版本 5')
+    if data['version']<6 and modern_tone(data['params']):raise ValueError('新影调参数需要配方版本 6')
     return params(data['params']).__dict__
 
 
@@ -454,6 +528,7 @@ def project_snapshot(value,options=None):
         input_spec=clone(engine.STATE.get('native_input',{'mode':'auto','manual':None}))
         version=6 if input_geometry(input_spec) else (5 if any(v.get('local_edits') for v in [*saved.values(),engine.STATE.get('roll_params') or {}]) else (4 if 'working_space' in input_spec else (3 if 'color' in input_spec else (2 if input_spec['mode']!='auto' or input_spec['manual'] else 1))))
         if any(v.get('perspective') is not None for v in [*saved.values(),engine.STATE.get('roll_params') or {}]):version=7
+        if any(modern_tone(v) for v in [*saved.values(),engine.STATE.get('roll_params') or {}]):version=8
         return {'format':'film-invert-project','version':version,'application':VERSION,
                 'input':input_spec,
                 'source':clone(engine.STATE['native_source']),
@@ -482,7 +557,7 @@ def read_project(path):
     path=io_path(path)
     if path.stat().st_size>32*1024*1024:raise ValueError('工程文件超过 32 MB')
     data=json.loads(path.read_text('utf-8'))
-    if not isinstance(data,dict) or data.get('format')!='film-invert-project' or data.get('version') not in (1,2,3,4,5,6,7):
+    if not isinstance(data,dict) or data.get('format')!='film-invert-project' or data.get('version') not in (1,2,3,4,5,6,7,8):
         raise ValueError('不支持的工程格式或版本')
     data['input']=normalize_input(data.get('input',{'mode':'auto','manual':None}))
     if input_geometry(data['input']) and data['version']<6:raise ValueError('输入片框校直需要工程版本 6')
@@ -505,6 +580,7 @@ def read_project(path):
         raise ValueError('局部编辑需要工程版本 5')
     if data['version']<7 and any(v.get('perspective') is not None for v in list(frames.values())+[data.get('roll_params') or {}] if isinstance(v,dict)):
         raise ValueError('透视校正需要工程版本 7')
+    if data['version']<8 and any(modern_tone(v) for v in [*frames.values(),data.get('roll_params') or {}]):raise ValueError('新影调参数需要工程版本 8')
     for key,value in frames.items():
         if not isinstance(key,str) or not key.isdecimal() or str(int(key))!=key or not 0<=int(key)<count or not isinstance(value,dict):
             raise ValueError('工程帧参数无效')
@@ -585,15 +661,15 @@ def export_roll(folder,value,meter_each,cancel,progress,export_options=None):
         if i in saved:
             p = params(saved[i])
         else:
-            p = params(roll or {})
+            p = params(roll or {'meter_mode':engine.STATE.get('default_meter_mode','legacy')})
             p.base,p.anchor = layout.bases[si],None
             if meter_each or roll is None:
-                _,p.span = core.auto_anchor(arr,p.base)
+                _,p.span = core.auto_anchor(arr,p.base,p.meter_mode)
         p = engine.prepare_params(p,img,layout,i)
         if i not in saved and p.flat_mode == 'strip':
             p.base = engine.strip_field(img,layout,i)[1]
             if meter_each:
-                _,p.span = core.auto_anchor(engine.corrected_input(arr,p),p.base)
+                _,p.span = core.auto_anchor(engine.corrected_input(arr,p),p.base,p.meter_mode)
         p.output_space = value.get('output_space','srgb')
         path = dest/filenames[i]
         export_image(path,p.__dict__,arr,source,i+1)

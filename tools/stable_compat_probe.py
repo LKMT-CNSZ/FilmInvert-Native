@@ -29,11 +29,17 @@ else:
     else:
         assert profile==Path(os.environ['LOCALAPPDATA'])/'FilmInvertNative/data'
         assert default_output(ui.APP_DIR,profile)==Path(os.environ['LOCALAPPDATA'])/'FilmInvertNative/exports'
-    assert model.VERSION in ('3.0.0','3.0.1')
-    opened=model.open_project(fixture/'rc13.filmproj');assert opened['params']==baseline['params']
-    assert model.recipe_params(json.loads((fixture/'rc13-recipe.json').read_text('utf-8')))==baseline['params']
+    assert model.VERSION==(ui.APP_DIR/'VERSION.txt').read_text('utf-8').strip()
+    def matches_old(actual):
+        import core
+        assert all(actual.get(k)==v for k,v in baseline['params'].items())
+        defaults=core.Params().__dict__
+        assert all(v==defaults[k] for k,v in actual.items() if k not in baseline['params'])
+        return True
+    opened=model.open_project(fixture/'rc13.filmproj');assert matches_old(opened['params'])
+    assert matches_old(model.recipe_params(json.loads((fixture/'rc13-recipe.json').read_text('utf-8'))))
     store=StudioStore(profile);asset=store.get_asset(baseline['asset']);assert asset['rating']==4 and asset['flag']=='pick' and asset['roll']=='合成测试卷'
-    restored=store.open_asset(asset['id']);assert restored['params']==baseline['params']
+    restored=store.open_asset(asset['id']);assert matches_old(restored['params'])
     output=fixture/'stable-positive.tif';model.export_image(output,restored['params'])
     actual,expected=read_tiff(str(output)),read_tiff(str(fixture/'rc13-positive.tif'))
     assert np.array_equal(actual,expected)
@@ -50,7 +56,7 @@ else:
         def check(self):
             if time.monotonic()>self.deadline:raise AssertionError('session GUI timeout')
             if not self.loaded or self.job is not None or self.preview_timer.isActive() or any(j.isRunning() for j in self.jobs):return
-            assert self.p==baseline['params'];assert self.isVisible();self.poll.stop()
+            assert matches_old(self.p);assert self.isVisible();self.poll.stop()
             self.save_session();model.write_json(fixture/'native-launch.json',{'status':'pass','version':model.VERSION,'profile_outside_install':not self.profile.is_relative_to(ui.APP_DIR),'mode':mode,'session_restored':True,'platform':self.windowHandle().screen().name(),'full_uint16_samples_equal':int(actual.size)})
             self.close()
     ui.MainWindow=SmokeWindow

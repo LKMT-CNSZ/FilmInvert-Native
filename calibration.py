@@ -94,6 +94,11 @@ def parameter_signature(params):
     value.pop('output_space',None)
     # Geometry follows the chart measurement stage; old sampling stays valid.
     for name in ('rotation','straighten','crop','perspective'):value.pop(name,None)
+    # New neutral controls must not invalidate a historical chart measurement.
+    defaults={'meter_mode':'legacy','scene_hdr':False,'tone_shadows':0.,'tone_highlights':0.,
+        'tone_whites':0.,'tone_blacks':0.,'tone_rolloff':0.,'local_tone':0.,'local_radius':.03,'local_detail':0.}
+    for key,default in defaults.items():
+        if value.get(key,default)==default:value.pop(key,None)
     return hashlib.sha256(json.dumps(value,sort_keys=True,allow_nan=False).encode()).hexdigest()
 
 

@@ -1174,3 +1174,49 @@ EN.update({
     '导入均匀参考':'Load flat field','片基照明估计':'Estimate from base',
     '打包工程与原片…':'Pack project…','解包迁移工程…':'Unpack project…',
 })
+
+EN.update({'自动测光':'Auto metering','排除片边':'Exclude film edges','全幅（兼容）':'Full frame (legacy)'})
+
+EN.update({'阴影':'Shadows','高光':'Highlights','白场调整':'Whites','黑场调整':'Blacks','高光柔化':'Highlight roll-off'})
+
+EN.update({'局部色调映射':'Local tone mapping','局部 HDR 强度':'Local HDR strength','作用范围':'Spatial range','细节保护':'Detail adjustment'})
+
+EN.update({
+'HDR 屏幕预览':'HDR display preview','HDR 屏幕预览…':'HDR display preview…',
+'HDR 已启用 · {0} bit · 屏幕报告峰值 {1:.0f} nits · scRGB FP16':'HDR active · {0} bit · Reported display peak {1:.0f} nits · scRGB FP16',
+'保存 HDR 合成数据':'Save merged HDR data','参考白亮度（nits）':'Reference white (nits)',
+'只读取当前帧区域（同布局、16bit 无压缩线性扫描）':'Read current frame only (matching layout, uncompressed 16-bit linear scans)',
+'合成 {0}/{1} · {2}':'Merging {0}/{1} · {2}',
+'合成并保存 float32 TIFF…':'Merge & save float32 TIFF…',
+'多曝光 HDR 合成':'Multi-exposure HDR merge','多曝光 HDR 合成…':'Multi-exposure HDR merge…',
+'导出线性 HDR TIFF':'Export linear HDR TIFF','导出线性 HDR TIFF…':'Export linear HDR TIFF…',
+'已保存 HDR 合成数据；无法恢复的端点像素占 {0:.2%}。':'Merged HDR data saved; unrecoverable endpoint pixels: {0:.2%}.',
+'已保存线性 HDR TIFF：':'Linear HDR TIFF saved: ',
+'平移对齐（不校正旋转和缩放）':'Translation alignment (no rotation or scale correction)',
+'抑制重影（与中间曝光比较）':'Suppress ghosts (compare against the middle exposure)',
+'曝光文件':'Exposure file','正像 / 场景包围曝光':'Positive / scene exposure bracket',
+'正在准备 HDR 屏幕预览…':'Preparing HDR display preview…',
+'正在导出线性 HDR 数据…':'Exporting linear HDR data…',
+'正在检测当前屏幕的 Windows HDR 状态；此窗口使用线性 scRGB FP16，SDR 高光柔化不参与 HDR 呈现。':'Checking Windows HDR on this display. This window uses linear scRGB FP16; SDR highlight roll-off is bypassed for HDR presentation.',
+'正在结束当前读取或合成…':'Finishing the current read or merge…','相对 EV':'Relative EV',
+'请先填写不同的实际相对 EV。':'Enter the actual, distinct relative EV values first.',
+'请填写拍摄时的实际相对曝光，例如 −2、0、+2；不能把同一文件的调亮版本当作新增采集信息。':'Enter actual capture exposures, for example −2, 0, +2 EV. Brightened copies of a single file do not supply new captured detail.',
+'请选择 2–9 个同画面曝光文件。':'Select 2–9 exposures of the same image.',
+'负片扫描 / 翻拍':'Negative scan / camera reproduction',
+'选择同一画面的 2–9 个不同曝光文件，填写实际相对 EV。先合并线性数据，再进行负片反相；合成不会改写原片。':'Select 2–9 exposures of the same image and enter their actual relative EV. Linear data is merged before negative inversion. Sources are retained unchanged.',
+'选择曝光文件':'Choose exposure files','选择曝光文件…':'Choose exposure files…',
+})
+
+EN.update({'当前屏幕未开启 Windows HDR；普通修片和 float32 TIFF 导出仍可使用。':'Windows HDR is not enabled on this display. SDR editing and float32 TIFF export remain available.'})
+
+EN['FilmInvert Native {0} 功能预览版\n照片库 · 参数快照队列 · 片边辅助 · 色卡标定\n官方 Python 运行时与应用文件分开分发。']='FilmInvert Native {0} — Feature preview\nPhoto library · Snapshot queue · Film edges · Chart calibration\nOfficial Python runtime and application sources are distributed separately.'
+
+EN['HDR 屏幕预览（实验）']='HDR display preview (experimental)'
+
+EN['合成区域上限 2000 万像素；对齐只处理平移。HDR 用法与限制见随包 HDR-GUIDE.md。']='Merge region limit: 20 MP; alignment handles translation only. See the included HDR-GUIDE.md for usage and limits.'
+
+EN.update({'主画布 HDR':'HDR canvas',' · 主画布 HDR · 直方图为 SDR 输出统计':' · HDR canvas · Histogram: SDR output','主画布 HDR 不可用，已切回 SDR：':'HDR canvas unavailable; returned to SDR: '})
+EN[' · 屏幕峰值报告异常，暂按 1000 nit 预览，请校准 Windows HDR']=' · Invalid display peak: preview assumes 1000 nits; calibrate Windows HDR'
+EN.update({'导出 TIFF…':'Export TIFF…','导出 TIFF':'Export TIFF'})
+EN.update({'导出 TIFF / HDR…':'Export TIFF / HDR…','导出 TIFF / HDR':'Export TIFF / HDR','已保存 Windows HDR 图像：':'Windows HDR image saved: '})
+EN['首次查看显影动画']='Reveal on first viewing'

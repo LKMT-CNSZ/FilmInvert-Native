@@ -48,7 +48,7 @@ def resize_field(field, height, width):
     bottom = grid[iy2[:,None],ix[None,:]]*(1-fx)+grid[iy2[:,None],ix2[None,:]]*fx
     return (top*(1-fy)+bottom*fy).astype(np.float32)
 
-def correct_light(rgb, field=None, strength=0., vignette=0.):
+def correct_light(rgb, field=None, strength=0., vignette=0.,hdr=False):
     if (field is None or strength <= 0) and vignette <= 0:
         return rgb
     h,w = rgb.shape[:2]
@@ -68,7 +68,7 @@ def correct_light(rgb, field=None, strength=0., vignette=0.):
             yy = np.linspace(-1,1,h,dtype=np.float32)[y0:y0+128,None]
             field = 1-np.float32(.7*vignette)*(xx*xx+yy*yy)/2
             out[y0:y0+128] /= field[...,None]
-    return np.clip(out,0,1).astype(np.float32)
+    return (np.maximum(out,0) if hdr else np.clip(out,0,1)).astype(np.float32)
 
 def remove_dust(rgb, strength=0., radius=1):
     """中值残差 + 8 连通小斑点；拒绝长线及大块，保留未选中像素。"""

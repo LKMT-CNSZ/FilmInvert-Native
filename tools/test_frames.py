@@ -48,7 +48,7 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build'/'tests',prefix='frames-') as f
     assert model.engine.STATE['frame_params'][1]['crop']==[0.,0.,1.,1.] and model.engine.STATE['frame_params'][1]['rotation']==0
     assert window.layout_undo_action.isEnabled()
     project=folder/'手动工程.filmproj';window.save_project_to(str(project));idle()
-    data=model.read_project(project);assert data['version']==2 and data['input']==spec and not window.project_dirty
+    data=model.read_project(project);assert data['version']==8 and data['input']==spec and not window.project_dirty
     before=model.export_roll(folder,window.p,False,threading.Event(),lambda *args:None)
     manifest=json.loads((Path(before['folder'])/'manifest.json').read_text('utf-8'))
     raw=source.linear
@@ -113,7 +113,7 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build'/'tests',prefix='frames-') as f
     window.open_mode.setCurrentIndex(window.open_mode.findData('single'))
     window.open_path(str(ROOT/'samples'/'pro-strip-demo.tif'));idle()
     assert window.info['strip'] is None and model.engine.STATE['full'].shape==source.linear.shape
-    window.save_project_to(str(project));idle();assert model.read_project(project)['version']==2
+    window.save_project_to(str(project));idle();assert model.read_project(project)['version']==8
     window.open_mode.setCurrentIndex(window.open_mode.findData('auto'))
     window.open_path(str(ROOT/'samples'/'pro-light-demo.tif'));idle();window.open_project_path(str(project));idle()
     assert window.info['strip'] is None and model.engine.STATE['native_input']['mode']=='single'

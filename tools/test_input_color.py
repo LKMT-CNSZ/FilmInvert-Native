@@ -47,7 +47,7 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build'/'tests',prefix='input-color-')
         else:raise AssertionError('Qt timeout')
         assert not errors,errors
     window.settings.setValue('inputColor','auto');window.open_path(str(source));idle()
-    snapshot=model.project_snapshot(window.p);assert snapshot['version']==3 and snapshot['input']['color']=='auto'
+    snapshot=model.project_snapshot(window.p);assert snapshot['version']==8 and snapshot['input']['color']=='auto'
     project=folder/'managed.filmproj';model.save_project(project,window.p)
     before=model.preview(window.p)['pixels'].copy();restored=model.open_project(project)
     assert np.array_equal(before,model.preview(restored['params'])['pixels'])
@@ -67,6 +67,9 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build'/'tests',prefix='input-color-')
     else:raise AssertionError('bad display profile accepted')
     # Old v1/v2 projects deliberately preserve their legacy interpretation.
     old=model.open_image(str(source),input_color='legacy',input_mode='single')
+    old['params']['meter_mode']='legacy'
+    for saved in model.engine.STATE['frame_params'].values():saved['meter_mode']='legacy'
+    if model.engine.STATE['roll_params']:model.engine.STATE['roll_params']['meter_mode']='legacy'
     oldproject=folder/'old.filmproj';model.save_project(oldproject,old['params'])
     assert model.read_project(oldproject)['version']==2
     model.open_project(oldproject);assert np.array_equal(model.engine.STATE['full'],linear.linear)
