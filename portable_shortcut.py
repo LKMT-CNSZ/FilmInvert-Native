@@ -4,6 +4,17 @@ import ctypes
 from ctypes import wintypes
 import os
 import uuid
+import hashlib
+
+def shortcut_icon(bundle):
+    # A new path invalidates Explorer's cached icon when artwork changes.
+    assets=Path(bundle)/'app'/'assets'
+    source=assets/'film-invert.ico'
+    digest=hashlib.sha256(source.read_bytes()).hexdigest()[:12]
+    versioned=assets/f'filminvert-native-{digest}.ico'
+    if not versioned.is_file():
+        raise FileNotFoundError(versioned)
+    return versioned
 
 def create(bundle):
     if os.name!='nt':raise OSError('Windows shortcuts are only available on Windows')
@@ -31,10 +42,15 @@ def create(bundle):
         check(invoke(shell,11,[wintypes.LPCWSTR],'-I -m film_invert_launcher'))
         check(invoke(shell,9,[wintypes.LPCWSTR],str(bundle)))
         check(invoke(shell,7,[wintypes.LPCWSTR],'FilmInvert Native - local portable runtime'))
-        check(invoke(shell,17,[wintypes.LPCWSTR,ctypes.c_int],str(bundle/'app'/'assets'/'film-invert.ico'),0))
+        check(invoke(shell,17,[wintypes.LPCWSTR,ctypes.c_int],str(shortcut_icon(bundle)),0))
         check(invoke(shell,0,[ctypes.c_void_p,ctypes.POINTER(ctypes.c_void_p)],ctypes.byref(persist_iid),ctypes.byref(persist)))
         target=bundle/'胶片工作室.lnk'
         check(invoke(persist,6,[wintypes.LPCWSTR,wintypes.BOOL],str(target),True))
+        # Notify the actual changed item instead of flushing every application's cache.
+        notify=ctypes.windll.shell32.SHChangeNotify
+        notify.argtypes=[wintypes.LONG,wintypes.UINT,wintypes.LPCWSTR,ctypes.c_void_p]
+        notify.restype=None
+        notify(0x2000,0x1005,str(target),None)
         return target
     finally:
         if persist.value:invoke(persist,2,[])

@@ -7,7 +7,7 @@ import zipfile
 
 ROOT=Path(__file__).resolve().parents[1]
 VERSION=(ROOT/'VERSION.txt').read_text('utf-8').strip()
-RELEASE_DATE='20261029' if VERSION in ('3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12') else '20261028' if VERSION in ('3.0.0','3.0.1','3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12') else '20261027'
+RELEASE_DATE='20261030' if VERSION=='3.1.0' else '20261029' if VERSION in ('3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0') else '20261028' if VERSION in ('3.0.0','3.0.1','3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0') else '20261027'
 DOCUMENTS=('README.md','README.en.md','README.en.html','LOCALIZATION.md','DESKTOP-README.md',
            'COMPAT-README.md','WORKFLOW-GUIDE.md','软件介绍.md','软件介绍.html',
            f'RELEASE-NOTES-{VERSION}.md',f'RELEASE-VALIDATION-{VERSION}.md','RELEASE-VALIDATION-3.0.0.md','BUILD.md','INSTALL-NOTES.txt','NEXT-ROADMAP.md','HDR-GUIDE.md')
@@ -47,7 +47,7 @@ def build():
     (runtime/'qt.conf').write_text('[Paths]\nPrefix=Lib/site-packages/PySide6\nPlugins=plugins\n',encoding='ascii')
     shutil.copy2(ROOT/'VERSION.txt',BUNDLE/'VERSION.txt')
     for path in ROOT.glob('*.py'):shutil.copy2(path,app/path.name)
-    documents=DOCUMENTS if VERSION in ('3.0.1','3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12') else ('DESKTOP-README.md','COMPAT-README.md','WORKFLOW-GUIDE.md','软件介绍.md','软件介绍.html',
+    documents=DOCUMENTS if VERSION in ('3.0.1','3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0') else ('DESKTOP-README.md','COMPAT-README.md','WORKFLOW-GUIDE.md','软件介绍.md','软件介绍.html',
                'RELEASE-NOTES-3.0.0.md','RELEASE-VALIDATION-3.0.0.md','BUILD.md','INSTALL-NOTES.txt','NEXT-ROADMAP.md') if VERSION=='3.0.0' else (
                'DESKTOP-README.md','VERIFICATION.md','COMPAT-README.md','WORKFLOW-GUIDE.md','RC13-FIXES.md','NEXT-ROADMAP.md')
     for name in documents:
@@ -84,7 +84,7 @@ https://code.qt.io/cgit/pyside/pyside-setup.git/tag/?h=v6.12.0
         'python':'3.13.17','architecture':'Windows x64','entry':'runtime/pythonw.exe -I -m film_invert_launcher'},indent=2),encoding='utf-8')
     (BUNDLE/'启动胶片工作室.lnk').unlink(missing_ok=True)  # Retired relative-only test shortcut.
     (BUNDLE/'启动胶片工作室.cmd').write_bytes(('@echo off\r\nstart "" "%~dp0runtime\\pythonw.exe" -I -m film_invert_launcher %*\r\n').encode('ascii'))
-    if VERSION in ('3.0.1','3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12'):(BUNDLE/'Launch FilmInvert.cmd').write_bytes(('@echo off\r\nstart "" "%~dp0runtime\\pythonw.exe" -I -m film_invert_launcher %*\r\n').encode('ascii'))
+    if VERSION in ('3.0.1','3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0'):(BUNDLE/'Launch FilmInvert.cmd').write_bytes(('@echo off\r\nstart "" "%~dp0runtime\\pythonw.exe" -I -m film_invert_launcher %*\r\n').encode('ascii'))
     (BUNDLE/'启动诊断.cmd').write_bytes(('@echo off\r\n"%~dp0runtime\\python.exe" -I -m film_invert_launcher --diagnose\r\necho.\r\necho See the diagnostic report path printed above.\r\npause\r\n').encode('ascii'))
     refresh_manifest()
     print('Built compatibility distribution:',BUNDLE)

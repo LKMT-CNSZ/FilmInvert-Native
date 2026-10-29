@@ -26,8 +26,8 @@ ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
 DisableProgramGroupPage=yes
 AllowNoIcons=yes
-SetupIconFile=..\assets\film-invert.ico
-UninstallDisplayIcon={app}\app\assets\film-invert.ico
+SetupIconFile=..\assets\filminvert-native-856209a72631.ico
+UninstallDisplayIcon={app}\app\assets\filminvert-native-856209a72631.ico
 OutputDir=..\release
 OutputBaseFilename=FilmInvert-Native-{#AppVersion}-setup-win64-{#ReleaseDate}
 Compression=lzma2
@@ -60,11 +60,11 @@ chinesesimplified.EmptyDirectory=请选择空目录。为保留旧安装及用�
 #include "stable-files.iss"
 Source: "installed-layout.json"; DestDir: "{app}"; Flags: ignoreversion
 [Icons]
-Name: "{group}\FilmInvert Native {#AppVersion}"; Filename: "{app}\runtime\pythonw.exe"; Parameters: "-I -m film_invert_launcher"; WorkingDir: "{app}"; IconFilename: "{app}\app\assets\film-invert.ico"
+Name: "{group}\FilmInvert Native {#AppVersion}"; Filename: "{app}\runtime\pythonw.exe"; Parameters: "-I -m film_invert_launcher"; WorkingDir: "{app}"; IconFilename: "{app}\app\assets\filminvert-native-856209a72631.ico"
 Name: "{group}\{cm:UserGuide}"; Filename: "{app}\软件介绍.html"; Languages: chinesesimplified
 Name: "{group}\{cm:UserGuide}"; Filename: "{app}\README.en.html"; Languages: english
 Name: "{group}\{cm:UninstallProgram} {#AppVersion}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\FilmInvert Native {#AppVersion}"; Filename: "{app}\runtime\pythonw.exe"; Parameters: "-I -m film_invert_launcher"; WorkingDir: "{app}"; IconFilename: "{app}\app\assets\film-invert.ico"; Tasks: desktopicon
+Name: "{autodesktop}\FilmInvert Native {#AppVersion}"; Filename: "{app}\runtime\pythonw.exe"; Parameters: "-I -m film_invert_launcher"; WorkingDir: "{app}"; IconFilename: "{app}\app\assets\filminvert-native-856209a72631.ico"; Tasks: desktopicon
 [Run]
 Filename: "{app}\runtime\pythonw.exe"; Parameters: "-I -m film_invert_launcher"; WorkingDir: "{app}"; Description: "{cm:LaunchProgram}"; Flags: nowait postinstall skipifsilent
 [Code]

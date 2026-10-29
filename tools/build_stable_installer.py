@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from build_compat import ROOT,BUNDLE,VERSION,RELEASE_DATE
 parser=argparse.ArgumentParser();parser.add_argument('--iscc',type=Path,default=ROOT/'build/release-tools/InnoSetup/ISCC.exe');args=parser.parse_args()
-assert VERSION in ('3.0.0','3.0.1','3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12')
+assert VERSION in ('3.0.0','3.0.1','3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0')
 manifest=json.loads((BUNDLE/'file-manifest.json').read_text('utf-8'))
 names=sorted([*manifest['files'],'file-manifest.json'])
 rows=[]

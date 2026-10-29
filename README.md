@@ -1,6 +1,6 @@
 # FilmInvert Native
 
-**3.1.0-rc12 功能预览版：**新增片边排除测光、单张高光/阴影/黑白场、局部色调映射、多曝光 HDR 合成、线性 ICC float32 HDR TIFF 和 Windows 原生 HDR 预览。用法及限制见 [HDR 指南](HDR-GUIDE.md)。HDR 显示目前为实验功能，已验证 FP16 通道和 SDR 拒绝，HDR 硬件视觉验收尚待完成。
+**3.1.0 正式版：**新增片边排除测光、单张高光/阴影/黑白场、局部色调映射、多曝光 HDR 合成、线性 ICC float32 HDR TIFF 和 Windows 原生 HDR 预览。用法及限制见 [HDR 指南](HDR-GUIDE.md)。HDR 显示目前为实验功能，已验证 FP16 通道和 SDR 拒绝，HDR 硬件视觉验收尚待完成。
 
 **本版更新：**红白胶片吉祥物的 1.2 秒启动显影；每次实际切帧播放 1.6 秒柔边显影；修复底部导航卡片重叠；统一提供 SDR TIFF、浮点 HDR TIFF 和 Windows HDR JXR 导出。
 
@@ -10,7 +10,7 @@ FilmInvert Native 是一款面向 Windows 的胶片数字化修片工具，适�
 
 软件采用黑白灰的极简“暗房”布局：中央大图、右侧调色、底部照片与胶片帧导航。既适合逐张处理，也支持把一批照片组织成可暂停、可恢复、经过人工复核的导出流程。
 
-**当前版本：3.1.0-rc12 功能预览版 · Windows x64 · 安装版 / 免安装版**
+**当前版本：3.1.0 正式版 · Windows x64 · 安装版 / 免安装版**
 
 [English introduction](README.en.md)
 
@@ -83,14 +83,14 @@ FilmInvert Native 是一款面向 Windows 的胶片数字化修片工具，适�
 
 ## 下载与安装
 
-前往 [v3.1.0-rc12 下载页面](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/tag/v3.1.0-rc12)，选择 Windows x64 发行文件：
+前往 [v3.1.0 下载页面](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/tag/v3.1.0)，选择 Windows x64 发行文件：
 
 | 文件 | 用途 |
 | --- | --- |
-| [FilmInvert-Native-3.1.0-rc12-setup-win64-20261029.exe](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.1.0-rc12/FilmInvert-Native-3.1.0-rc12-setup-win64-20261029.exe) | 常规安装，提供开始菜单、可选桌面入口与卸载 |
-| [FilmInvert-Native-3.1.0-rc12-compat-win64-20261029.zip](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.1.0-rc12/FilmInvert-Native-3.1.0-rc12-compat-win64-20261029.zip) | 免安装版，完整解压后直接运行 |
-| [FilmInvert-Native-3.1.0-rc12-source-20261029.zip](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.1.0-rc12/FilmInvert-Native-3.1.0-rc12-source-20261029.zip) | 对应应用源码、构建与验证脚本 |
-| [SHA256 文本清单](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.1.0-rc12/SHA256-3.1.0-rc12.txt) / [JSON 清单](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.1.0-rc12/SHA256-3.1.0-rc12.json) | 发行文件完整性校验 |
+| [FilmInvert-Native-3.1.0-setup-win64-20261030.exe](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.1.0/FilmInvert-Native-3.1.0-setup-win64-20261030.exe) | 常规安装，提供开始菜单、可选桌面入口与卸载 |
+| [FilmInvert-Native-3.1.0-compat-win64-20261030.zip](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.1.0/FilmInvert-Native-3.1.0-compat-win64-20261030.zip) | 免安装版，完整解压后直接运行 |
+| [FilmInvert-Native-3.1.0-source-20261030.zip](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.1.0/FilmInvert-Native-3.1.0-source-20261030.zip) | 对应应用源码、构建与验证脚本 |
+| [SHA256 文本清单](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.1.0/SHA256-3.1.0.txt) / [JSON 清单](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/download/v3.1.0/SHA256-3.1.0.json) | 发行文件完整性校验 |
 
 两种运行包均包含独立的官方 Python / Qt 运行时，**不需要另外安装 Python 或 Qt**。
 
@@ -154,7 +154,7 @@ FilmInvert Native 是一款面向 Windows 的胶片数字化修片工具，适�
 
 ## 验证与已知限制
 
-3.1.0-rc12 的 44 项随包隔离检查已通过，另完成 12 组旧核心逐像素一致性对照；当前验证范围见 [本版验证说明](RELEASE-VALIDATION-3.1.0-rc12.md)，实际执行和交付校验以同版交付验证 JSON 为准。3.0.1 的 35 项结果与下面的 3.0.0 结果是历史证据。
+3.1.0 的 44 项随包隔离检查已通过，另完成 12 组旧核心逐像素一致性对照；当前验证范围见 [本版验证说明](RELEASE-VALIDATION-3.1.0.md)，实际执行和交付校验以同版交付验证 JSON 为准。3.0.1 的 35 项结果与下面的 3.0.0 结果是历史证据。
 
 3.0.0 基于已验收的 rc13 完成正式分发，已通过 34 项随包隔离检查，以及中文 / 空格路径、安装与卸载、实际禁写目录启动与回退、旧工程 / 会话 / 照片库恢复、TIFF 像素一致性、归档完整性与隐私排除检查。自动化 Qt 启动与交互测试采用 offscreen 平台，具体范围见验证文档。
 
@@ -211,3 +211,13 @@ JXR 采用编码器的 Lossless 选项，但浮点预处理存在精度量化，
 ## 启动显影
 
 软件启动时显示用户提供的红白胶片吉祥物 Logo，以 1.2 秒从左向右柔边显影，随后淡出进入编辑界面。处理模块在后台导入，主窗口在 Qt 主线程创建；初始化超过动画时长时直接衔接，不额外等待另一轮。点击启动画面或 Esc 可跳过，并遵循 Windows 动画设置。启动图片参数仍只打开一次；切图动画继续为 1.6 秒。启动 Logo 的显示尺寸副本随应用提供，原始图片未修改。
+
+
+## 软件图标
+
+应用窗口、启动窗口的任务栏图标、快捷方式和安装包统一使用新的红白 FilmInvert 胶片标志。Windows ICO 包含 16、24、32、48、64、128、256 像素尺寸。启动显影画面继续使用胶片吉祥物，时长仍为 1.2 秒。
+
+
+## 快捷方式图标缓存修复
+
+快捷方式改用带图标内容哈希的独立 ICO 路径，生成后通知 Windows 刷新该项目，避免沿用旧版图标缓存。安装包与窗口也引用同一新版图标。

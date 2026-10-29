@@ -1,6 +1,6 @@
 # FilmInvert Native
 
-**3.1.0-rc12 feature preview:** film-edge exclusion for automatic metering; single-image highlights/shadows/whites/blacks; local tone mapping; multi-exposure HDR merging; linear ICC-tagged float32 HDR TIFF; native Windows scRGB HDR preview. Read [the HDR guide](HDR-GUIDE.md). HDR display is experimental: FP16 creation and SDR refusal were tested, while visual validation on HDR hardware is pending.
+**3.1.0 stable release:** film-edge exclusion for automatic metering; single-image highlights/shadows/whites/blacks; local tone mapping; multi-exposure HDR merging; linear ICC-tagged float32 HDR TIFF; native Windows scRGB HDR preview. Read [the HDR guide](HDR-GUIDE.md). HDR display is experimental: FP16 creation and SDR refusal were tested, while visual validation on HDR hardware is pending.
 
 **A local film inversion and photo editing tool for Windows.**
 
@@ -24,7 +24,7 @@ Since version **3.0.1**, the app offers a **Simplified Chinese / English** inter
 
 ## Download
 
-Download the installer, portable ZIP, matching source and SHA256 checksums from [v3.1.0-rc12](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/tag/v3.1.0-rc12). This is a prerelease.
+Download the installer, portable ZIP, matching source and SHA256 checksums from [v3.1.0](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/tag/v3.1.0). This is the stable release.
 
 This build adds a 1.2-second mascot film-development startup animation, a 1.6-second soft reveal on each frame change, a fix for overlapping navigation cards, and unified SDR TIFF, float32 HDR TIFF and Windows HDR JXR export.
 
@@ -105,3 +105,13 @@ The rc7 cached-texture, narrow-feather, background HDR preparation and 16 ms sch
 ## Startup reveal
 
 A 1.2-second left-to-right soft reveal develops the supplied red-and-white mascot logo, then fades into the editor. Processing modules import in a background thread; Qt widgets are created on the GUI thread. Slow initialization does not add another animation-length wait. Click the splash or press Escape to skip; Windows animation preferences are respected. Image arguments open once. Navigation reveal remains 1.6 seconds. A display-size copy of the supplied logo is bundled.
+
+
+## Application icon
+
+The application window, splash taskbar icon, shortcuts and installer use the supplied red-and-white FilmInvert film logo, with seven Windows ICO sizes from 16 to 256 pixels. The 1.2-second startup reveal continues to show the film mascot.
+
+
+## Shortcut icon cache fix
+
+Shortcuts use a dedicated ICO path containing the artwork hash, then notify Windows to refresh the item. This avoids reusing the old icon cache. Installer and window icons use the same new asset.

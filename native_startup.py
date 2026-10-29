@@ -28,7 +28,7 @@ class StartupSplash(QWidget):
     skipped=Signal()
     def __init__(self,logo,english=False):
         super().__init__(None,Qt.WindowType.SplashScreen|Qt.WindowType.FramelessWindowHint)
-        self.setWindowTitle('FilmInvert Native');self.setWindowIcon(QIcon(str(logo)))
+        self.setWindowTitle('FilmInvert Native');self.setWindowIcon(QIcon(str(Path(__file__).resolve().parent/'assets/filminvert-native-856209a72631.ico')))
         self.logo=QPixmap(str(logo));self.progress=0.;self.english=english
         screen=QApplication.primaryScreen();area=screen.availableGeometry() if screen else None
         self.resize(min(620,area.width()-32) if area else 620,min(370,area.height()-32) if area else 370)

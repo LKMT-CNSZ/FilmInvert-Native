@@ -1,4 +1,4 @@
-# FilmInvert Native 3.1.0-rc12 可复现构建说明
+# FilmInvert Native 3.1.0 可复现构建说明
 
 目标为 Windows x64，使用官方独立 CPython 3.13.17 + 固定 wheel；运行用户不需要另装 Python。源码包包含当前应用、测试、打包/安装脚本、合成样例及许可，不包含私人原片、validation、用户库或运行时二进制。重建需下载依赖，之后启动/修片/导出离线完成。所称可复现是能够以同一源码与固定依赖重新构建及验证，未宣称安装 EXE 在不同机器上逐字节相同。
 
@@ -35,7 +35,7 @@ python tools/verify_compat_archive.py
 python tools/verify_stable_release.py
 ```
 
-VERSION.txt 为 3.1.0-rc12，desktop_model.VERSION、portable-layout、installed-layout、安装器版本及文档必须一致。构建输出 dist/3.1.0-rc12-compat/FilmInvertNative；最终 package_stable 只允许清单内文件，排除 data/out/app/build、缓存、日志与本机入口。先 stage-only 打包准备可安装文件，再编译；测试完成后把实测结论写入 RELEASE-VALIDATION-3.1.0-rc12.md，再重新打包/编译并对最终安装包执行安装测试，最后生成 SHA256 和验证最终归档。
+VERSION.txt 为 3.1.0，desktop_model.VERSION、portable-layout、installed-layout、安装器版本及文档必须一致。构建输出 dist/3.1.0-compat/FilmInvertNative；最终 package_stable 只允许清单内文件，排除 data/out/app/build、缓存、日志与本机入口。先 stage-only 打包准备可安装文件，再编译；测试完成后把实测结论写入 RELEASE-VALIDATION-3.1.0.md，再重新打包/编译并对最终安装包执行安装测试，最后生成 SHA256 和验证最终归档。
 
 安装编译：python tools/build_stable_installer.py --iscc "其他目录/ISCC.exe"。文件列表由干净 bundle 的 manifest 生成，不把测试产生的库或导出物一起安装。默认使用安装脚本固定的版本目录，用户级安装；安装到非空目录会失败，卸载不递归删除用户目录。
 
@@ -45,12 +45,12 @@ VERSION.txt 为 3.1.0-rc12，desktop_model.VERSION、portable-layout、installed
 
 安装测试仅在 build/stable-install-test 的中文空格目录，当前用户卸载登记临时建立后移除；若检测到同 AppId 现有安装就停止，避免触及现用安装。测试环境把应用 LOCALAPPDATA 指向隔离目录，安装程序仍使用 Windows 当前用户的注册/快捷方式设施。不会升级 D 盘安装。测试包启动、库恢复、非空目录拒绝、卸载及数据/原片/成品保留。真实 rc13 库兼容探针需已有 dist/3.0.0-rc13-compat/FilmInvertNative；源码重建机器缺少基线时应明示跳过，不能假记通过。
 
-源码与分发逐文件 SHA256 对照由 verify_stable_release.py 执行；旧基线哈希列在本次验证记录中。release/SHA256-3.1.0-rc12.json 和 .txt 覆盖当前正式交付，不覆盖旧版本文件。第三方许可保留，不把校验或本机测试写成多机/安全软件/色彩认证。
+源码与分发逐文件 SHA256 对照由 verify_stable_release.py 执行；旧基线哈希列在本次验证记录中。release/SHA256-3.1.0.json 和 .txt 覆盖当前正式交付，不覆盖旧版本文件。第三方许可保留，不把校验或本机测试写成多机/安全软件/色彩认证。
 
 ## 4. 工具与证据
 
-build_stable_installer.py、stable-setup.iss 为当前安装流程；package_stable.py 为正式打包入口。build_native.py/package_release.py/package_compat.py 为历史布局脚本，不能替代正式版隐私清单流程。validation 只留工作区，不装入产品或源码 ZIP；本次发布的可携带验证记录为 RELEASE-VALIDATION-3.1.0-rc12.md 与 release/3.1.0-rc12-交付验证.json。
-# 3.1.0-rc12 language update
+build_stable_installer.py、stable-setup.iss 为当前安装流程；package_stable.py 为正式打包入口。build_native.py/package_release.py/package_compat.py 为历史布局脚本，不能替代正式版隐私清单流程。validation 只留工作区，不装入产品或源码 ZIP；本次发布的可携带验证记录为 RELEASE-VALIDATION-3.1.0.md 与 release/3.1.0-交付验证.json。
+# 3.1.0 language update
 
-The current workspace builds 3.1.0-rc12 with bilingual UI and experimental HDR features. Neutral processing retains legacy results; new imports opt into edge-aware metering. Render both guides with `tools/render_guide.py` and `tools/render_guide.py --source README.en.md --output README.en.html --language en`, then use `tools/build_compat.py`, `tools/test_compat_distribution.py`, `tools/package_stable.py --stage-only`, `tools/build_stable_installer.py`, and `tools/package_stable.py`. `tools/test_i18n.py` is included in the isolated suite. Package names follow `VERSION.txt`; historical 3.0.0 deliverables remain in place. Historical 3.0.0 evidence remains in its original archives.
+The current workspace builds 3.1.0 with bilingual UI and experimental HDR features. Neutral processing retains legacy results; new imports opt into edge-aware metering. Render both guides with `tools/render_guide.py` and `tools/render_guide.py --source README.en.md --output README.en.html --language en`, then use `tools/build_compat.py`, `tools/test_compat_distribution.py`, `tools/package_stable.py --stage-only`, `tools/build_stable_installer.py`, and `tools/package_stable.py`. `tools/test_i18n.py` is included in the isolated suite. Package names follow `VERSION.txt`; historical 3.0.0 deliverables remain in place. Historical 3.0.0 evidence remains in its original archives.
 

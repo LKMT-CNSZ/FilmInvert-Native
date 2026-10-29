@@ -49,7 +49,7 @@ APP_NAME='FilmInvert Native'
 IMAGE_FILTER=_t('胶片图像 (*.tif *.tiff *.png *.jpg *.jpeg *.cr2 *.cr3 *.nef *.arw *.dng *.raf *.orf *.rw2 *.fff *.3fr *.pef *.srw *.iiq);;所有文件 (*)')
 
 def app_icon():
-    logo=ROOT/'assets/startup-mascot.png'
+    logo=ROOT/'assets/filminvert-native-856209a72631.ico'
     if logo.is_file():return QIcon(str(logo))
     pix=QPixmap(64,64);pix.fill(Qt.GlobalColor.transparent)
     p=QPainter(pix);p.setRenderHint(QPainter.RenderHint.Antialiasing)
