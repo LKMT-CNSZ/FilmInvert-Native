@@ -16,7 +16,7 @@ INPUT={'single':_t('单张'),'strip':_t('整条'),'auto':_t('自动')}
 STATUS={'idle':_t('等待下一阶段'),'paused':_t('已暂停'),'running':_t('处理中'),'queued':_t('待导出'),'failed':_t('失败'),'completed':_t('已完成')}
 FLAGS={'none':_t('未标记'),'pick':_t('精选'),'reject':_t('弃选')}
 STEP={'check':_t('检查原片'),'prepare':_t('独立准备'),'style':_t('应用组风格'),'preview':_t('刷新校样'),'report':_t('生成汇总')}
-FIELD_NAMES={'style':_t('胶片 / 反相风格'),'wb':_t('白平衡'),'exposure':_t('曝光'),'tone':_t('黑白场 / 曲线 / HSL'),'output':_t('输出空间'),'calibration':_t('色卡配置')}
+FIELD_NAMES={'style':_t('胶片 / 反相风格'),'wb':_t('白平衡'),'exposure':_t('曝光'),'tone':_t('影调 / HSL / HDR'),'output':_t('输出空间'),'calibration':_t('色卡配置')}
 
 class BatchController(QObject):
     changed=Signal();message=Signal(object);completed=Signal(str,str)

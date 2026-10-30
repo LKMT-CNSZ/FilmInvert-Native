@@ -7,7 +7,7 @@ from build_compat import ROOT,BUNDLE,VERSION,RELEASE_DATE,refresh_manifest,DOCUM
 def digest(path):
     with path.open('rb') as stream:return hashlib.file_digest(stream,'sha256').hexdigest()
 def stage():
-    assert VERSION in ('3.0.0','3.0.1','3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0')
+    assert VERSION in ('3.0.0','3.0.1','3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0','3.1.1','3.2.0-rc1','3.2.0-rc2','3.2.0-rc3','3.2.0-rc4')
     for folder in (BUNDLE,BUNDLE/'app'):
         for path in folder.glob('*.md'):
             if path.name not in DOCUMENTS:path.unlink()
@@ -42,9 +42,9 @@ def archive(path,items):
 
 def source_files():
     files=set()
-    for pattern in ('*.py','tools/*.py','tools/*.ps1','assets/**/*','samples/*','THIRD_PARTY/**/*'):
+    for pattern in ('*.py','tools/*.py','tools/*.ps1','assets/**/*','tools/installer-assets/*','samples/*','THIRD_PARTY/**/*'):
         files.update(p for p in ROOT.glob(pattern) if p.is_file() and '__pycache__' not in p.parts and p.name!='PyInstaller-COPYING.txt')
-    for name in (*DOCUMENTS,'VERSION.txt','requirements-build.txt','tools/stable-setup.iss','tools/ChineseSimplified.isl','tools/installed-layout.json','build/compat-dependencies.json','build/installer-dependencies.json'):
+    for name in (*DOCUMENTS,'VERSION.txt','requirements-build.txt','tools/stable-setup.iss','tools/installer-ui.iss','tools/ChineseSimplified.isl','tools/installed-layout.json','build/compat-dependencies.json','build/installer-dependencies.json'):
         files.add(ROOT/name)
     return sorted(files)
 

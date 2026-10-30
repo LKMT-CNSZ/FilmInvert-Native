@@ -19,9 +19,9 @@ assert np.all(visible_frame(ramp,(-2,-2,10,8),12,10)[:2]==0)
 
 app=ui.QApplication([]);folder=ROOT/'build/hdr-canvas-tests';folder.mkdir(parents=True,exist_ok=True)
 class Display:
-    hdr=True;closed=0;frames=[];prepared=[]
+    hdr=True;closed=0;frames=[];prepared=[];monitor=1;white=203.
     def __init__(self,*args):pass
-    def capabilities(self):return dict(hdr_active=self.hdr,max_nits=1000,name='fake HDR display')
+    def capabilities(self):return dict(hdr_active=self.hdr,max_nits=1000,name='fake HDR display',monitor=self.monitor,sdr_white_nits=self.white)
     def present(self,frame,w,h,white):self.frames.append(frame.copy())
     def present_prepared(self,frame,w,h):self.prepared.append(frame.copy())
     def close(self):Display.closed+=1
@@ -40,10 +40,25 @@ with tempfile.TemporaryDirectory(dir=folder) as temporary:
     before=ui.model.clone(window.p);window.hdr_canvas_action.trigger();idle()
     assert not window.hdr_canvas.active and not window.hdr_canvas_action.isChecked()
     assert window.p==before
+    dialog=window.hdr_failure_dialog;assert dialog.isVisible() and dialog.detailedText()
+    dialog.accept();app.processEvents()
+    from native_hdr import show_hdr_unavailable
+    with patch('native_hdr.QDesktopServices.openUrl',return_value=True) as settings:
+        dialog=show_hdr_unavailable(window,'Windows HDR is not enabled on this display')
+        assert '使用 HDR' in dialog.text() and dialog.detailedText().startswith('Windows HDR')
+        assert show_hdr_unavailable(window,'duplicate') is dialog
+        next(b for b in dialog.buttons() if 'Windows' in b.text()).click()
+        assert settings.call_args[0][0].toString()=='ms-settings:display'
+        dialog.accept();app.processEvents()
     with patch.object(ui.QApplication,'platformName',return_value='windows'),patch.object(hdr_display,'Surface',Display):
         window.hdr_canvas_action.trigger();idle();assert window.hdr_canvas.active
         assert window.hdr_canvas.linear.max()>1 and window.p==before
-        window.hdr_canvas.paint();assert Display.frames[-1].max()>1
+        window.hdr_canvas.paint();assert Display.prepared[-1].max()>1
+        preserved=window.hdr_canvas.linear.copy();recipe=ui.model.clone(window.p)
+        window.sdr_compare.setChecked(True);assert not window.hdr_canvas.paint() and window.p==recipe
+        window.sdr_compare.setChecked(False);assert window.hdr_canvas.paint() and np.array_equal(window.hdr_canvas.linear,preserved)
+        Display.monitor=2;Display.white=160.;window.hdr_canvas.check_display()
+        assert window.hdr_canvas.active and window.hdr_canvas.reference_white==160 and np.array_equal(window.hdr_canvas.linear,preserved)
         window.edit_parameter('exposure',1,True);idle();assert window.hdr_canvas.linear.max()>linear.max()*1.99
         window.travel(-1);idle();assert window.p['exposure']==0
         # HDR endpoint work runs in the background; playback never resamples/remaps.
@@ -91,6 +106,9 @@ with tempfile.TemporaryDirectory(dir=folder) as temporary:
         window.pixel_view();idle();assert window.canvas.region_mode and window.hdr_canvas.linear is not None
         Display.hdr=False;window.hdr_canvas.check_display();idle()
         assert not window.hdr_canvas.active and not window.hdr_canvas_action.isChecked()
+        assert window.hdr_canvas.headroom==0
         assert window.proof_action.isEnabled() and window.clipping_action.isEnabled()
+        assert window.hdr_failure_dialog.isVisible()
+        window.hdr_failure_dialog.accept();app.processEvents()
     window.close();app.processEvents();assert Display.closed>=1
 print('PASS HDR editor float headroom/live exposure/undo, exact region geometry, pan/padding, shared sampling, SDR refusal and display-loss recovery (mock HDR sink; no hardware visual claim)')

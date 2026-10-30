@@ -20,7 +20,7 @@ import geometry
 from loader import load
 from file_io import io_path,temporary_path
 
-VERSION = '3.1.0'
+VERSION = '3.1.1'
 from preview_cache import PreviewCache
 from document_cache import DocumentCache,BlobCache
 PREVIEWS=PreviewCache()
@@ -446,6 +446,17 @@ def export_hdr_view(path,value,cancel=None):
     return hdr_jxr.write(path,linear,p.working_space,cancel)
 
 
+def export_ultrahdr(path,value,cancel=None):
+    import hdr_color,hdr_ultrahdr
+    p=engine.prepare_params(params(value))
+    if cancel is not None and cancel.is_set():raise InterruptedError('HDR export canceled')
+    linear=hdr_color.render(engine.STATE['full'],p)
+    # Disabled HDR grading retains the legacy SDR rendering path, including
+    # its original shoulder. Use that exact intent rather than a new tone map.
+    sdr=None if p.hdr_enabled else core.process(engine.STATE['full'],p,'srgb')
+    return hdr_ultrahdr.write(path,linear,p,cancel,sdr)
+
+
 def export_hdr(path,value,cancel=None):
     import hdr_color,hdr_io
     p=engine.prepare_params(params(value))
@@ -480,7 +491,7 @@ def modern_tone(value):
     return p.scene_hdr or p.meter_mode!='legacy' or tone_mapping.active(p)
 
 def recipe(value,source=None,index=None):
-    return {'format':'film-invert-recipe','version':6 if modern_tone(value) else 5 if params(value).perspective is not None else (4 if input_geometry(engine.STATE.get('native_input',{})) else (3 if params(value).local_edits else (2 if params(value).working_space=='prophoto' else 1))),'application':VERSION,
+    return {'format':'film-invert-recipe','version':7 if params(value).hdr_enabled else 6 if modern_tone(value) else 5 if params(value).perspective is not None else (4 if input_geometry(engine.STATE.get('native_input',{})) else (3 if params(value).local_edits else (2 if params(value).working_space=='prophoto' else 1))),'application':VERSION,
             'source':source or engine.STATE['path'],
             'frame':index if index is not None else engine.STATE['frame_index']+1,
             'params':params(value).__dict__,
@@ -491,13 +502,14 @@ def recipe(value,source=None,index=None):
             'source_region':source_region(None if index is None else index-1)}
 
 def recipe_params(data):
-    if not isinstance(data,dict) or data.get('format')!='film-invert-recipe' or data.get('version') not in (1,2,3,4,5,6):
+    if not isinstance(data,dict) or data.get('format')!='film-invert-recipe' or data.get('version') not in (1,2,3,4,5,6,7):
         raise ValueError('不支持的配方格式')
-    if (data['version'] in (4,5) or data['version']==6 and (data.get('source_region') or {}).get('angle')) and data.get('source_region')!=source_region():raise ValueError('配方的输入片框校直不同，请先打开匹配工程')
+    if (data['version'] in (4,5) or data['version']>=6 and (data.get('source_region') or {}).get('angle')) and data.get('source_region')!=source_region():raise ValueError('配方的输入片框校直不同，请先打开匹配工程')
     if not isinstance(data.get('params'),dict):raise ValueError('配方参数无效')
     if data['version']<3 and data['params'].get('local_edits'):raise ValueError('局部编辑需要配方版本 3')
     if data['version']<5 and data['params'].get('perspective') is not None:raise ValueError('透视校正需要配方版本 5')
     if data['version']<6 and modern_tone(data['params']):raise ValueError('新影调参数需要配方版本 6')
+    if data['version']<7 and params(data['params']).hdr_enabled:raise ValueError('HDR grading requires recipe version 7')
     return params(data['params']).__dict__
 
 
@@ -529,6 +541,7 @@ def project_snapshot(value,options=None):
         version=6 if input_geometry(input_spec) else (5 if any(v.get('local_edits') for v in [*saved.values(),engine.STATE.get('roll_params') or {}]) else (4 if 'working_space' in input_spec else (3 if 'color' in input_spec else (2 if input_spec['mode']!='auto' or input_spec['manual'] else 1))))
         if any(v.get('perspective') is not None for v in [*saved.values(),engine.STATE.get('roll_params') or {}]):version=7
         if any(modern_tone(v) for v in [*saved.values(),engine.STATE.get('roll_params') or {}]):version=8
+        if any(params(v).hdr_enabled for v in [*saved.values(),engine.STATE.get('roll_params') or {}]):version=9
         return {'format':'film-invert-project','version':version,'application':VERSION,
                 'input':input_spec,
                 'source':clone(engine.STATE['native_source']),
@@ -557,7 +570,7 @@ def read_project(path):
     path=io_path(path)
     if path.stat().st_size>32*1024*1024:raise ValueError('工程文件超过 32 MB')
     data=json.loads(path.read_text('utf-8'))
-    if not isinstance(data,dict) or data.get('format')!='film-invert-project' or data.get('version') not in (1,2,3,4,5,6,7,8):
+    if not isinstance(data,dict) or data.get('format')!='film-invert-project' or data.get('version') not in (1,2,3,4,5,6,7,8,9):
         raise ValueError('不支持的工程格式或版本')
     data['input']=normalize_input(data.get('input',{'mode':'auto','manual':None}))
     if input_geometry(data['input']) and data['version']<6:raise ValueError('输入片框校直需要工程版本 6')
@@ -581,6 +594,7 @@ def read_project(path):
     if data['version']<7 and any(v.get('perspective') is not None for v in list(frames.values())+[data.get('roll_params') or {}] if isinstance(v,dict)):
         raise ValueError('透视校正需要工程版本 7')
     if data['version']<8 and any(modern_tone(v) for v in [*frames.values(),data.get('roll_params') or {}]):raise ValueError('新影调参数需要工程版本 8')
+    if data['version']<9 and any(params(v).hdr_enabled for v in [*frames.values(),data.get('roll_params') or {}]):raise ValueError('HDR grading requires project version 9')
     for key,value in frames.items():
         if not isinstance(key,str) or not key.isdecimal() or str(int(key))!=key or not 0<=int(key)<count or not isinstance(value,dict):
             raise ValueError('工程帧参数无效')

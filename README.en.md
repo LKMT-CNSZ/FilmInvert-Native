@@ -1,6 +1,8 @@
 # FilmInvert Native
 
-**3.1.0 stable release:** film-edge exclusion for automatic metering; single-image highlights/shadows/whites/blacks; local tone mapping; multi-exposure HDR merging; linear ICC-tagged float32 HDR TIFF; native Windows scRGB HDR preview. Read [the HDR guide](HDR-GUIDE.md). HDR display is experimental: FP16 creation and SDR refusal were tested, while visual validation on HDR hardware is pending.
+Download the **3.1.1 stable release**: [Windows installer, portable ZIP and matching source](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/tag/v3.1.1).
+
+**3.1.1 stable release:** film-edge exclusion for automatic metering; single-image highlights/shadows/whites/blacks; local tone mapping; multi-exposure HDR merging; linear ICC-tagged float32 HDR TIFF; native Windows scRGB HDR preview. Read [the HDR guide](HDR-GUIDE.md). HDR display is experimental: FP16 creation and SDR refusal were tested, while visual validation on HDR hardware is pending.
 
 **A local film inversion and photo editing tool for Windows.**
 
@@ -24,7 +26,7 @@ Since version **3.0.1**, the app offers a **Simplified Chinese / English** inter
 
 ## Download
 
-Download the installer, portable ZIP, matching source and SHA256 checksums from [v3.1.0](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/tag/v3.1.0). This is the stable release.
+Download the installer, portable ZIP, matching source and SHA256 checksums from [v3.1.1](https://github.com/LKMT-CNSZ/FilmInvert-Native/releases/tag/v3.1.1). This is the stable release.
 
 This build adds a 1.2-second mascot film-development startup animation, a 1.6-second soft reveal on each frame change, a fix for overlapping navigation cards, and unified SDR TIFF, float32 HDR TIFF and Windows HDR JXR export.
 
@@ -115,3 +117,25 @@ The application window, splash taskbar icon, shortcuts and installer use the sup
 ## Shortcut icon cache fix
 
 Shortcuts use a dedicated ICO path containing the artwork hash, then notify Windows to refresh the item. This avoids reusing the old icon cache. Installer and window icons use the same new asset.
+
+
+
+
+## HDR display adaptation and grading
+
+HDR display adaptation and photo grading are managed separately. Enable HDR grading in the HDR tab to save highlight strength, start, transition, HDR range and SDR rendition with each photo/frame. Projects, recipes, undo and batch tone synchronization retain these values. HDR TIFF and JXR use the same graded floating-point master. SDR previews and TIFF exports use the same master with SDR rendition mapping. Disabled defaults preserve the legacy pipeline.
+
+HDR grading requires project version 9 / recipe version 7; older applications reject these versions. Display adaptation reads the window monitor, Windows SDR reference white and DXGI peak report, selects its GPU, and rechecks display changes. Per-display manual overrides stay on this computer. Missing/invalid reports use labeled estimates; calibrate and verify them. JXR keeps its authored 203-nit nominal white and does not bake device-specific adaptation. Viewer appearance may differ.
+
+Compare SDR output, inspect the extended RGB-maximum histogram, or visualize HDR highlights in yellow and beyond-display values in red. 0 EV is nominal white. SDR displays can edit and export but cannot validate physical HDR appearance. Failure dialogs retain technical details and a Windows settings shortcut. HDR display remains experimental pending cross-device visual acceptance.
+
+
+## Film HDR presets and Ultra HDR JPEG
+
+Choose Natural, Clear or Soft in the HDR tab. Each enables HDR grading and changes only its HDR/SDR rendition controls, retaining exposure, white balance, curves, film settings and local edits. Natural gives a modest highlight lift, Clear a stronger lift, and Soft a smaller range with a longer transition. Undo and fine-tune the result; projects, recipes and batch tone synchronization retain the values. Presets cannot recover information lost during capture or scanning.
+
+In **Export TIFF / HDR**, select **Ultra HDR JPEG - SDR + Gain Map** as the file type and save a `.jpg`. It contains an ICC-tagged sRGB SDR base and an ISO 21496-1 multichannel gain map. Ordinary JPEG viewers show the base; HDR viewers supporting this gain-map standard can show extended highlights. JPEG is lossy: retain float HDR TIFF as the master. Windows JXR remains available. This encoder writes ISO gain-map metadata without legacy XMP gain-map metadata. Device, app and social-platform compatibility requires testing; transcoding may strip the gain map.
+
+The base uses the matching SDR rendition, including SDR highlight compression/exposure when HDR grading is enabled, or the legacy SDR pipeline when disabled. The HDR nominal white is 203 nits; gain-map capacity follows content peak rather than the encoder's 10000-nit default. Per-display calibration is never baked in. Export converts to sRGB primaries and clips out-of-gamut colors; use HDR TIFF to retain wide-gamut master data. Maximum JPEG dimension is 8192 pixels and peak is 10000 nits. Oversized/out-of-range exports fail explicitly without silently resizing.
+
+The pinned official imagecodecs 2026.10.10 Windows wheel embeds Google libultrahdr 2.0.2. Only the Ultra HDR codec and required helpers are shipped with upstream licenses and SHA256 provenance. No system codec installation is required. Cross-device HDR visual acceptance is still pending.

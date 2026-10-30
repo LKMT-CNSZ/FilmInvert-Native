@@ -1,10 +1,25 @@
 """Native exposure-merge workflow; no decoding or merging on the GUI thread."""
 from pathlib import Path
 import threading,traceback
-from PySide6.QtCore import QThread,Signal,Qt,QTimer
+from PySide6.QtCore import QThread,Signal,Qt,QTimer,QUrl
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (QDialog,QVBoxLayout,QHBoxLayout,QLabel,QPushButton,QTableWidget,
     QTableWidgetItem,QDoubleSpinBox,QComboBox,QCheckBox,QFileDialog,QProgressBar,QMessageBox,QWidget,QApplication)
 from i18n import tr as _t,trf as _tf,ui as _ui
+
+
+def show_hdr_unavailable(parent,error):
+    dialog=getattr(parent,'hdr_failure_dialog',None)
+    if dialog is not None and dialog.isVisible():return dialog
+    text=str(error)
+    system_off=any(part in text.lower() for part in ('hdr is not enabled','hdr is no longer enabled','hdr enabled','未开启 windows hdr'))
+    message=_t('请先在 Windows「设置 → 系统 → 显示 → HDR」中，为软件所在的显示器开启「使用 HDR」，再返回软件重试。\n\n如果没有 HDR 开关，请检查显示器支持、连接方式及显卡驱动；多屏请确认窗口位于 HDR 显示器上。') if system_off else _t('当前无法建立 HDR 显示。请先确认 Windows「设置 → 系统 → 显示 → HDR」已开启「使用 HDR」，再检查显卡驱动和显示器连接。\n\n如果系统 HDR 已开启，此错误可能来自显示设备或驱动兼容性，请保留下方详细信息。')
+    dialog=QMessageBox(QMessageBox.Icon.Warning,_t('HDR 显示暂不可用'),str(message),QMessageBox.StandardButton.Ok,parent)
+    dialog.setDetailedText(text)
+    button=dialog.addButton(str(_t('打开 Windows 显示设置')),QMessageBox.ButtonRole.ActionRole)
+    button.clicked.connect(lambda:QDesktopServices.openUrl(QUrl('ms-settings:display')))
+    dialog.setWindowModality(Qt.WindowModality.WindowModal);parent.hdr_failure_dialog=dialog
+    dialog.open();return dialog
 
 
 class MergeWorker(QThread):
@@ -108,15 +123,26 @@ class HDRCanvas(QWidget):
             ratio=self.devicePixelRatioF();self.surface=Surface(int(self.winId()),max(1,round(self.width()*ratio)),max(1,round(self.height()*ratio)))
             if not self.surface.info['hdr_active']:raise RuntimeError(str(_t('当前屏幕未开启 Windows HDR；普通修片和 float32 TIFF 导出仍可使用。')))
             self.setAttribute(Qt.WidgetAttribute.WA_PaintOnScreen);self.timer.start();self.update()
-        except Exception as error:self.stop();self.failed=True;self.changed.emit(str(error))
+        except Exception as error:self.stop();self.failed=True;self.changed.emit(str(error));show_hdr_unavailable(self.parentWidget(),error)
     def paintEvent(self,event):
         if self.surface is None:return super().paintEvent(event)
         try:
-            ratio=self.devicePixelRatioF();info=self.surface.present(self.linear,max(1,round(self.width()*ratio)),max(1,round(self.height()*ratio)),self.reference_white)
+            from hdr_display import display_mapping,scrgb_frame
+            import json
+            info=self.surface.capabilities()
+            if info.get('monitor')!=self.surface.monitor:
+                self.stop();self.failed=False;self.initialize();return
+            if not info['hdr_active']:raise RuntimeError('Windows HDR is no longer enabled on this display')
+            settings=self.parentWidget().parentWidget().settings
+            try:profile=json.loads(settings.value('hdrDisplayProfilesV2','{}')).get(info['name'],{})
+            except (ValueError,TypeError):profile={}
+            self.reference_white,peak,_=display_mapping(info,profile.get('white'),profile.get('peak'))
+            ratio=self.devicePixelRatioF();w=max(1,round(self.width()*ratio));h=max(1,round(self.height()*ratio))
+            self.surface.present_prepared(scrgb_frame(self.linear,w,h,self.reference_white,peak),w,h)
             status=_tf('HDR 已启用 · {0} bit · 屏幕报告峰值 {1:.0f} nits · scRGB FP16',info['bits'],info['max_nits'])
-            if info.get('peak_estimated'):status+=_t(' · 屏幕峰值报告异常，暂按 1000 nit 预览，请校准 Windows HDR')
+            status+=_tf(' · 参考白 {0:.0f} / 映射峰值 {1:.0f} nits',self.reference_white,peak)
             self.changed.emit(status)
-        except Exception as error:self.stop();self.failed=True;self.changed.emit(str(error))
+        except Exception as error:self.stop();self.failed=True;self.changed.emit(str(error));show_hdr_unavailable(self.parentWidget(),error)
     def stop(self):
         self.timer.stop()
         if self.surface is not None:self.surface.close();self.surface=None
@@ -128,10 +154,7 @@ class HDRPreview(QDialog):
         super().__init__(parent);_ui(self.setWindowTitle,_t('HDR 屏幕预览（实验）'));self.resize(1060,760)
         layout=QVBoxLayout(self);self.message=QLabel();self.message.setWordWrap(True);layout.addWidget(self.message)
         self.canvas=HDRCanvas(linear,self);self.canvas.changed.connect(lambda text:_ui(self.message.setText,text));layout.addWidget(self.canvas,1)
-        row=QHBoxLayout();row.addWidget(_ui(QLabel,_t('参考白亮度（nits）')))
-        self.white=QDoubleSpinBox();self.white.setRange(80,400);self.white.setValue(203);self.white.setSingleStep(10)
-        self.white.valueChanged.connect(self.change_white);row.addWidget(self.white)
+        row=QHBoxLayout();display=_ui(QPushButton,_t('HDR 显示…'));display.clicked.connect(parent.open_hdr_display);row.addWidget(display)
         button=_ui(QPushButton,_t('关闭'));button.clicked.connect(self.close);row.addWidget(button);layout.addLayout(row)
         _ui(self.message.setText,_t('正在检测当前屏幕的 Windows HDR 状态；此窗口使用线性 scRGB FP16，SDR 高光柔化不参与 HDR 呈现。'))
-    def change_white(self,value):self.canvas.reference_white=value;self.canvas.update()
     def closeEvent(self,event):self.canvas.stop();event.accept()

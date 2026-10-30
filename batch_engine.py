@@ -78,6 +78,7 @@ def sync_snapshot(snapshot,origin,reference,fields,sync_mode,delta,offset,shared
             for field in FIELDS[group]:roll[field]=clone(reference.get(field,getattr(core.Params(),field)))
         out['roll_params']=model.params(roll).__dict__
     if any(model.modern_tone(v) for v in [*out['frames'].values(),out.get('roll_params') or {}]):out['version']=8
+    if any(model.params(v).hdr_enabled for v in [*out['frames'].values(),out.get('roll_params') or {}]):out['version']=9
     return out
 
 def thumbnail(studio,batch,item,snapshot,prefix):

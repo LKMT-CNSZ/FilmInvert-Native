@@ -84,6 +84,11 @@ def _levels(source,p,clean,repair_context=None,check=lambda:None):
 
 def render(source,p,box,original=False,cancel=None):
     p=p.normalized();box,shape=box_for(source.shape,p.__dict__,box)
+    if p.hdr_enabled and not original:
+        if source.shape[0]*source.shape[1]*128>768*1024*1024:raise ViewportUnavailable('HDR SDR proof exceeds the temporary budget; use fit view')
+        check_cancel(cancel);wide=core.process(source,p,p.working_space);check_cancel(cancel)
+        x0,y0,x1,y1=box
+        return wide[y0:y1,x0:x1],box,shape,'HDR SDR proof'
     global _CONTEXT,_CONTEXT_KEY
     clean=_plain(p);context=None
     advanced=not original and (p.local_tone!=0 or p.local_detail!=0 or p.dust_strength>0 or p.local_edits or (p.channel_repair and p.mode=='color_negative') or (box[2]-box[0])*(box[3]-box[1])>1_000_000)

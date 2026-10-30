@@ -16,6 +16,17 @@ for invalid in (0,26.0674,float('nan'),float('inf'),20000):
     estimated=hdr_display.scrgb_frame(image*8,40,20,203,invalid)
     assert np.array_equal(estimated,bright),'Bad display metadata must not crush HDR highlights to SDR'
 for valid in (80,203,400,1000,10000):assert hdr_display.display_peak(valid)==valid
+levels=np.array([0,.18,.5,.65,.8,1,2,4],np.float32)
+neutral=np.repeat(levels[None,:,None],3,axis=2);original=neutral.copy()
+boosted=hdr_display.enhance_highlights(neutral,1)
+assert np.array_equal(neutral,original) and np.array_equal(boosted[:,:3],neutral[:,:3])
+assert np.all(np.diff(boosted[0,:,0])>=0) and boosted[0,5,0]==2 and boosted[0,-1,0]==8
+assert np.array_equal(hdr_display.enhance_highlights(neutral,0),neutral)
+color=np.array([[[1,.8,.6]]],np.float32)
+assert np.allclose(hdr_display.enhance_highlights(color,2)/color,(hdr_display.enhance_highlights(color,2)/color)[...,0,None])
+for peak in (203,400,1000):
+    mapped=hdr_display.scrgb_frame(hdr_display.enhance_highlights(neutral,2),8,1,203,peak)
+    assert np.isfinite(mapped).all() and float(mapped[...,0].max())<=peak/80+.01
 assert hdr_display.SwapDesc.__sizeof__ is not None
 if '--native' in sys.argv:
     if os.name!='nt':raise RuntimeError('Native capability test requires Windows')

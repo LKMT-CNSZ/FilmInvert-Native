@@ -17,3 +17,10 @@ Windows installer generated using unmodified Inno Setup 6.7.3.
 Copyright (C) 1997-2026 Jordan Russell. Portions Copyright (C) 2000-2026
 Martijn Laan. https://jrsoftware.org/ See InnoSetup-LICENSE.txt.
 The Inno Setup compiler is a build tool, not included as an installed runtime.
+
+Ultra HDR JPEG uses selected unmodified modules from imagecodecs 2026.10.10
+(BSD-3-Clause) embedding Google libultrahdr 2.0.2 (Apache-2.0 or MIT) and
+libjpeg-turbo. Licenses are retained here and in imagecodecs/licenses.
+The pinned official wheel URL/SHA256 is in dependencies.json.
+https://github.com/cgohlke/imagecodecs
+https://github.com/google/libultrahdr/tree/v2.0.2

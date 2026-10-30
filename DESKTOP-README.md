@@ -1,6 +1,6 @@
-# FilmInvert Native 3.1.0 正式版 · Windows x64
+# FilmInvert Native 3.1.1 正式版 · Windows x64
 
-**3.1.0 正式版：**新增片边排除测光、单张高光/阴影/黑白场、局部色调映射、多曝光 HDR 合成、线性 ICC float32 HDR TIFF 和 Windows 原生 HDR 预览。用法及限制见 [HDR 指南](HDR-GUIDE.md)。HDR 显示目前为实验功能，已验证 FP16 通道和 SDR 拒绝，HDR 硬件视觉验收尚待完成。
+**3.1.1 正式版：**新增片边排除测光、单张高光/阴影/黑白场、局部色调映射、多曝光 HDR 合成、线性 ICC float32 HDR TIFF 和 Windows 原生 HDR 预览。用法及限制见 [HDR 指南](HDR-GUIDE.md)。HDR 显示目前为实验功能，已验证 FP16 通道和 SDR 拒绝，HDR 硬件视觉验收尚待完成。
 
 新增简体中文 / English 界面，主工具栏或「视图 → Language / 语言」即时切换并记住选择。英文介绍见 `README.en.md` / `README.en.html`，英文帮助菜单打开英文说明。切换保留当前编辑、批次和任务；用户文字保持原文。
 
@@ -14,6 +14,6 @@ FilmInvert Native 是本机胶片反相和整卷/批次修片工具，采用黑�
 
 主要功能：彩色/黑白反相、片基与测光、曲线/HSL、几何/多线校直/片边辅助/四角透视、局部仿制与曝光、宽色域/ICC/色卡、单张/整条导航、独立多图编辑、批量 C（含 A/B）、分组字段同步、4/9 校样、人工复核、模板/停靠/恢复、冻结队列/多轮导出/自动汇总、筛选评级与快捷键、工程配方及备份迁移、16bit TIFF。
 
-建议先读「软件介绍」的第一次单张工作流，再读 WORKFLOW-GUIDE.md 操作批次。本版变更见 RELEASE-NOTES-3.1.0.md，当前验证及边界见 RELEASE-VALIDATION-3.1.0.md，源码构建见 BUILD.md。
+建议先读「软件介绍」的第一次单张工作流，再读 WORKFLOW-GUIDE.md 操作批次。本版变更见 RELEASE-NOTES-3.1.1.md，当前验证及边界见 RELEASE-VALIDATION-3.1.1.md，源码构建见 BUILD.md。
 
 发行安装包与应用未签名，上游官方运行时保留原签名。SHA256 用于完整性核对；本次未声称完成其他电脑、安全软件或设备色准认证。

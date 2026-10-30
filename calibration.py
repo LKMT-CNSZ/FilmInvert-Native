@@ -92,6 +92,8 @@ def parameter_signature(params):
     if value.get('working_space')=='srgb':value.pop('working_space',None)
     # Output gamut does not affect the sRGB working stage used for measurements.
     value.pop('output_space',None)
+    # HDR grading and its SDR rendition follow chart measurement, just like geometry.
+    for name in ('hdr_enabled','hdr_strength','hdr_start','hdr_softness','hdr_limit','sdr_hdr_rolloff','sdr_hdr_exposure'):value.pop(name,None)
     # Geometry follows the chart measurement stage; old sampling stays valid.
     for name in ('rotation','straighten','crop','perspective'):value.pop(name,None)
     # New neutral controls must not invalidate a historical chart measurement.

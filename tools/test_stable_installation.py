@@ -3,7 +3,7 @@ from pathlib import Path
 import csv,hashlib,json,os,shutil,subprocess,sys,time,uuid,winreg
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from build_compat import ROOT,VERSION,RELEASE_DATE
-assert VERSION in ('3.0.0','3.0.1','3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0')
+assert VERSION in ('3.0.0','3.0.1','3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0','3.1.1','3.2.0-rc1','3.2.0-rc2','3.2.0-rc3','3.2.0-rc4')
 setup=ROOT/'release'/f'FilmInvert-Native-{VERSION}-setup-win64-{RELEASE_DATE}.exe'
 keyname=rf'Software\Microsoft\Windows\CurrentVersion\Uninstall\FilmInvertNative.Stable.{VERSION}_is1'
 try:
@@ -38,7 +38,7 @@ try:
     blocked=parent/'已有目录';blocked.mkdir();sentinel=blocked/'用户文件.txt';sentinel.write_text('must survive',encoding='utf-8')
     result=run([setup,'/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',f'/DIR={blocked}',f'/LOG={parent / "blocked-install.log"}'],'blocked',success=False)
     assert result.returncode!=0 and sentinel.read_text('utf-8')=='must survive' and list(blocked.iterdir())==[sentinel]
-    run([setup,'/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',f'/DIR={install}',f'/GROUP={group}','/TASKS=',f'/LOG={parent / "install.log"}'],'install')
+    run([setup,'/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-',f'/DIR={install}',f'/GROUP={group}','/TASKS=startmenu',f'/UPGRADESCOPE={parent}',f'/LOG={parent / "install.log"}'],'install')
     installed=True
     with winreg.OpenKey(winreg.HKEY_CURRENT_USER,keyname) as key:
         assert Path(winreg.QueryValueEx(key,'InstallLocation')[0]).resolve()==install.resolve()
@@ -56,7 +56,7 @@ $link=$shell.CreateShortcut($path)
     shortcut=json.loads(run(['powershell.exe','-NoProfile','-ExecutionPolicy','Bypass','-File',ps],'shortcut').stdout)
     assert shortcut['exists'] and Path(shortcut['target']).resolve()==(install/'runtime/pythonw.exe').resolve()
     assert shortcut['arguments']=='-I -m film_invert_launcher' and Path(shortcut['working']).resolve()==install.resolve()
-    if VERSION in ('3.1.0-rc14','3.1.0'):
+    if VERSION in ('3.1.0-rc14','3.1.0','3.1.1','3.2.0-rc1','3.2.0-rc2','3.2.0-rc3','3.2.0-rc4'):
         icon_file=install/'app/assets/film-invert.ico'
         icon_name='filminvert-native-'+hashlib.sha256(icon_file.read_bytes()).hexdigest()[:12]+'.ico'
         assert Path(shortcut['icon'].rsplit(',',1)[0]).resolve()==(icon_file.parent/icon_name).resolve()
@@ -91,7 +91,7 @@ $link=$shell.CreateShortcut($path)
     else:raise AssertionError('uninstall registry entry remains')
     assert not (Path(shortcut['folder'])/('FilmInvert Native '+VERSION+'.lnk')).exists()
     installed=False
-    result={'version':VERSION,'date':'2026-10-30' if VERSION=='3.1.0' else '2026-10-29','status':'pass','installer_sha256':hashlib.sha256(setup.read_bytes()).hexdigest(),
+    result={'version':VERSION,'date':'2026-10-30' if VERSION in ('3.1.0','3.1.1','3.2.0-rc1','3.2.0-rc2','3.2.0-rc3','3.2.0-rc4') else '2026-10-29','status':'pass','installer_sha256':hashlib.sha256(setup.read_bytes()).hexdigest(),
             'checks':['nonempty_target_refused','Chinese_space_install','start_menu_shortcut_target','uninstall_registry','installed_manifest_matches','actual_NTFS_write_denied','isolated_diagnostic','launcher_Qt_event_loop_offscreen','rc13_project_recipe_session_library_restored','rc13_vs_stable_full_uint16_TIFF_equal','old_frozen_queue_engine_refused','uninstall_removes_program_and_entry','uninstall_preserves_profile_library_original_finished_output_and_extra_file','old_rc13_fixture_untouched'],
             'compatibility':report,'foreign_cwd':True,'invalid_system_python':True,'test_location':'build/stable-install-test (isolated)','no_D_drive_install_changed':True}
     (ROOT/'release'/f'{VERSION}-交付验证.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')

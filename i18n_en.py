@@ -1157,6 +1157,11 @@ EN = {'\n{0} 星 · ': '\n{0} stars · ',
  '；请调整角点，右侧保留上次有效结果。': '; adjust the corners. The last valid result remains on the right.'}
 
 EN.update({
+'影调 / HSL / HDR':'Tone / HSL / HDR',
+' · 屏幕峰值报告异常，当前映射峰值 {0:.0f} nits，请校准':' · Invalid display peak; current mapped peak {0:.0f} nits; calibrate display',
+' · 参考白 {0:.0f} / 映射峰值 {1:.0f} nits':' · Reference white {0:.0f} / mapped peak {1:.0f} nits',
+'当前为 SDR 显示；可继续 HDR 调色与导出。':'SDR display active; HDR grading and export remain available.',
+'HDR 范围着色':'HDR range colors',
     '红':'R','橙':'O','黄':'Y','绿':'G','青':'C','蓝':'B','紫':'V','品':'M','、':', ',
     '自动：优先嵌入 ICC':'Auto: prefer embedded ICC',
     '兼容旧版：16bit 线性 / 8bit sRGB':'Legacy: 16-bit linear / 8-bit sRGB',
@@ -1214,9 +1219,35 @@ EN['FilmInvert Native {0} 功能预览版\n照片库 · 参数快照队列 · �
 EN['HDR 屏幕预览（实验）']='HDR display preview (experimental)'
 
 EN['合成区域上限 2000 万像素；对齐只处理平移。HDR 用法与限制见随包 HDR-GUIDE.md。']='Merge region limit: 20 MP; alignment handles translation only. See the included HDR-GUIDE.md for usage and limits.'
+EN.update({
+'HDR 显示…':'HDR display…','HDR 显示适配':'HDR display adaptation','参考白跟随 Windows':'Follow Windows reference white','峰值跟随屏幕报告':'Follow reported display peak',
+'这里只适配当前显示器，不写入照片和导出。报告不可靠时请使用校准结果手动设置；估计值不是实测值。':'These settings adapt this display only and are not saved into photos or exports. Use calibrated manual values if reports are unreliable; estimates are not measurements.',
+'重新检测':'Detect again','屏幕：{0}\nWindows HDR：{1} · {2} bit\n系统参考白：{3:.0f} nits · 屏幕报告峰值：{4:.0f} nits':'Display: {0}\nWindows HDR: {1} · {2} bit\nSystem reference white: {3:.0f} nits · Reported peak: {4:.0f} nits',
+'已开启':'On','未开启':'Off','\n存在缺失或异常报告，当前使用明确标注的估计值。':'\nSome reports are missing or invalid; labeled estimates are in use.',
+'无法读取当前屏幕：':'Cannot read the current display: ',
+'HDR 扩展直方图':'Extended HDR histogram','屏幕余量 +{0:.1f} EV · 超范围 {1:.1f}%':'Display headroom +{0:.1f} EV · Beyond display {1:.1f}%',
+'打开图像后显示 HDR 范围':'Open an image to inspect HDR ranges',
+'HDR 调色与输出':'HDR grading and output','启用 HDR 调色（保存到照片）':'Enable HDR grading (saved with photo)',
+'亮部强度 EV':'Highlight strength EV','亮部起点':'Highlight start','高光过渡':'Highlight transition','HDR 范围 EV':'HDR range EV',
+'HDR 调色进入工程与 HDR TIFF/JXR 导出；屏幕亮度适配独立保存在本机。':'HDR grading is saved in projects and HDR TIFF/JXR output; display adaptation is stored separately on this computer.',
+'SDR 版本':'SDR rendition','SDR 高光压缩':'SDR highlight compression','SDR 曝光 EV':'SDR exposure EV',
+'对照 SDR 输出':'Compare SDR output','高光范围提示：黄为 HDR，红为超屏幕范围':'Highlight ranges: yellow is HDR; red exceeds display',
+'点击 HDR 显示可检测屏幕和校准亮度。':'Open HDR display to detect the monitor and calibrate luminance.',
+'扩展直方图按最亮 RGB 通道统计，0 EV 为参考白。SDR 屏可调色、查看对照及导出，真实 HDR 显示需要系统支持。':'The extended histogram measures the brightest RGB channel; 0 EV is reference white. SDR displays can grade, proof and export; true HDR display requires system support.',
+'HDR 显示：{0}\n参考白 {1:.0f} nits · 映射峰值 {2:.0f} nits':'HDR display: {0}\nReference white {1:.0f} nits · Mapped peak {2:.0f} nits'})
 
 EN.update({'主画布 HDR':'HDR canvas',' · 主画布 HDR · 直方图为 SDR 输出统计':' · HDR canvas · Histogram: SDR output','主画布 HDR 不可用，已切回 SDR：':'HDR canvas unavailable; returned to SDR: '})
 EN[' · 屏幕峰值报告异常，暂按 1000 nit 预览，请校准 Windows HDR']=' · Invalid display peak: preview assumes 1000 nits; calibrate Windows HDR'
 EN.update({'导出 TIFF…':'Export TIFF…','导出 TIFF':'Export TIFF'})
 EN.update({'导出 TIFF / HDR…':'Export TIFF / HDR…','导出 TIFF / HDR':'Export TIFF / HDR','已保存 Windows HDR 图像：':'Windows HDR image saved: '})
+EN.update({
+'HDR 预览增强 ':'HDR preview boost ',
+'仅增强 HDR 预览亮部，不改动调色、取样和导出。0 EV 恢复原始 HDR 显示；默认 1 EV。':'Boosts HDR preview highlights only; grading, sampling and export are unchanged. Use 0 EV for the original HDR view; default: 1 EV.',
+'HDR 显示暂不可用':'HDR display unavailable',
+'打开 Windows 显示设置':'Open Windows display settings',
+'请先在 Windows「设置 → 系统 → 显示 → HDR」中，为软件所在的显示器开启「使用 HDR」，再返回软件重试。\n\n如果没有 HDR 开关，请检查显示器支持、连接方式及显卡驱动；多屏请确认窗口位于 HDR 显示器上。':'In Windows Settings > System > Display > HDR, turn on Use HDR for the display containing this app, then try again.\n\nIf no HDR switch is available, check display support, the connection and graphics drivers. With multiple monitors, place the app on the HDR display.',
+'当前无法建立 HDR 显示。请先确认 Windows「设置 → 系统 → 显示 → HDR」已开启「使用 HDR」，再检查显卡驱动和显示器连接。\n\n如果系统 HDR 已开启，此错误可能来自显示设备或驱动兼容性，请保留下方详细信息。':'HDR presentation could not be initialized. Check Use HDR in Windows Settings > System > Display > HDR, then check graphics drivers and the display connection.\n\nIf Windows HDR is already on, a display or driver compatibility issue may be involved. Keep the details below.'})
 EN['首次查看显影动画']='Reveal on first viewing'
+EN['导出中可选 Ultra HDR JPEG：内含 sRGB 底图与 ISO 增益图；JPEG 有损，HDR 显示取决于查看器支持。']='Choose Ultra HDR JPEG in Export: sRGB base plus ISO gain map. JPEG is lossy; HDR viewing requires a compatible viewer.'
+
+EN.update({'自然': 'Natural', '通透': 'Clear', '柔和': 'Soft', '预设仅修改 HDR 与 SDR 版本参数，可撤销并继续微调；不恢复已丢失的高光。': 'Presets change only HDR and SDR rendition settings. Undo or fine-tune them; clipped highlights cannot be recovered.', 'HDR 调色进入工程与 HDR TIFF/JXR/Ultra HDR JPEG 导出；屏幕亮度适配独立保存在本机。': 'HDR grading is saved in projects and HDR TIFF/JXR/Ultra HDR JPEG exports. Display adaptation stays on this computer.', '已保存 Ultra HDR JPEG：': 'Ultra HDR JPEG saved: '})

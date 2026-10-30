@@ -141,6 +141,13 @@ class Params:
     local_radius: float = 0.03
     local_detail: float = 0.0
     scene_hdr: bool = False
+    hdr_enabled: bool = False
+    hdr_strength: float = 1.0
+    hdr_start: float = .5
+    hdr_softness: float = .5
+    hdr_limit: float = 4.0
+    sdr_hdr_rolloff: float = 1.0
+    sdr_hdr_exposure: float = 0.0
     temp: float = 0.0           # -1..1  偏暖(+R) / 偏冷(+B)
     tint: float = 0.0           # -1..1  偏品(+R+B) / 偏绿(+G)
     saturation: float = 1.0
@@ -178,6 +185,9 @@ class Params:
         p.exposure = float(np.clip(_num(p.exposure, 0.0), -4.0, 4.0))
         p.meter_mode = p.meter_mode if p.meter_mode in ('legacy','edges') else 'legacy'
         p.scene_hdr=p.scene_hdr is True
+        p.hdr_enabled=p.hdr_enabled is True
+        for key,default,lo,hi in (('hdr_strength',1.,0,3),('hdr_start',.5,.1,1),('hdr_softness',.5,.05,2),('hdr_limit',4.,0,6),('sdr_hdr_rolloff',1.,0,1),('sdr_hdr_exposure',0.,-2,2)):
+            setattr(p,key,float(np.clip(_num(getattr(p,key),default),lo,hi)))
         for key in ('tone_shadows','tone_highlights','tone_whites','tone_blacks'):
             setattr(p,key,float(np.clip(_num(getattr(p,key),0),-1,1)))
         p.tone_rolloff=float(np.clip(_num(p.tone_rolloff,0),0,1))
@@ -575,6 +585,11 @@ def working_linear(rgb: np.ndarray, p: Params, repair_context=None,tone_context=
 def process(rgb: np.ndarray, p: Params, target_space='srgb', repair_context=None,tone_context=None,tone_box=None) -> np.ndarray:
     """线性 RGB → sRGB 显示域；输出色彩空间由导出器另行转换。"""
     p = p.normalized()
+    if p.hdr_enabled:
+        import hdr_color,colorio
+        linear=hdr_color.render(rgb,p,repair_context,tone_context,tone_box)
+        out=hdr_color.encode(hdr_color.sdr_rendition(linear,p),p.working_space)
+        return colorio.convert(np.clip(out,0,1),target_space,p.working_space)
     e = working_linear(rgb,p,repair_context,tone_context,tone_box)
     if p.mode != 'bw_negative':
         e = calibration.apply(e,p.calibration,p.calibration_strength,p.working_space)

@@ -2,7 +2,7 @@
 from pathlib import Path
 import hashlib,json,sys,zipfile
 sys.path.insert(0,str(Path(__file__).resolve().parent))
-from build_compat import ROOT,VERSION,RELEASE_DATE,qt_file
+from build_compat import ROOT,VERSION,RELEASE_DATE,qt_file,codec_file
 from package_stable import DOCUMENTS,source_files,digest
 release=ROOT/'release'
 records=json.loads((release/f'SHA256-{VERSION}.json').read_text('utf-8'))
@@ -20,6 +20,9 @@ with zipfile.ZipFile(portable) as z,zipfile.ZipFile(source) as src:
     names=z.namelist();snames=src.namelist()
     for items in (names,snames):assert len(items)==len(set(items)) and all('..' not in Path(name).parts for name in items)
     manifest=json.loads(z.read(prefix+'file-manifest.json'))['files']
+    if installed.get('test_mode'):
+        assert VERSION=='3.1.1' and installed['same_script_except_AppId_and_output_filename']
+        assert installed['payload_manifest_sha256']==hashlib.sha256(z.read(prefix+'file-manifest.json')).hexdigest()
     assert set(names)=={prefix+name for name in manifest}|{prefix+'file-manifest.json'}
     for name,value in manifest.items():assert hashlib.sha256(z.read(prefix+name)).hexdigest()==value,name
     source_manifest=json.loads(src.read(sprefix+'source-manifest.json'));assert source_manifest['version']==VERSION
@@ -57,6 +60,7 @@ with zipfile.ZipFile(portable) as z,zipfile.ZipFile(source) as src:
                 if record['package']=='CPython-embeddable':dest='runtime/'+info.filename
                 else:
                     if record['package']=='PySide6-Essentials' and not qt_file(rel):continue
+                    if record['package']=='imagecodecs' and not codec_file(rel):continue
                     dest='runtime/Lib/site-packages/'+info.filename
                 expected_runtime[dest]=hashlib.sha256(upstream.read(info.filename)).hexdigest()
     overrides={'runtime/python313._pth','runtime/qt.conf'}
@@ -79,13 +83,17 @@ if old.exists():
             name='FilmInvertNative-source/'+file.name
             if name not in baseline.namelist() or baseline.read(name)!=file.read_bytes():changed.append(file.name)
     allowed={'app_paths.py','desktop_model.py','film_invert_launcher.py','native_app.py','native_studio.py'}
-    if VERSION in ('3.0.1','3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0'):allowed.update({'i18n.py','i18n_en.py','native_batch.py','native_calibration.py','native_efficiency.py','native_frames.py','native_geometry.py','native_local.py','native_widgets.py'})
-    if VERSION in ('3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0'):allowed.update({'metering.py','tone_mapping.py','hdr_color.py','hdr_display.py','hdr_io.py','hdr_merge.py','native_hdr.py','core.py','viewport_render.py','region_context.py','server.py','loader.py','tiffread.py','local_edits.py','restoration.py','calibration.py','batch_store.py','batch_engine.py','studio_store.py','studio_worker.py'})
-    if VERSION in ('3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0'):allowed.add('native_hdr_canvas.py')
-    if VERSION in ('3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0'):allowed.add('hdr_jxr.py')
-    if VERSION in ('3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0'):allowed.add('native_import_reveal.py')
-    if VERSION in ('3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0'):allowed.add('native_startup.py')
-    if VERSION in ('3.1.0-rc14','3.1.0'):allowed.add('portable_shortcut.py')
+    if VERSION in ('3.0.1','3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0','3.1.1','3.2.0-rc1','3.2.0-rc2','3.2.0-rc3','3.2.0-rc4'):allowed.update({'i18n.py','i18n_en.py','native_batch.py','native_calibration.py','native_efficiency.py','native_frames.py','native_geometry.py','native_local.py','native_widgets.py'})
+    if VERSION in ('3.1.0-rc1','3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0','3.1.1','3.2.0-rc1','3.2.0-rc2','3.2.0-rc3','3.2.0-rc4'):allowed.update({'metering.py','tone_mapping.py','hdr_color.py','hdr_display.py','hdr_io.py','hdr_merge.py','native_hdr.py','core.py','viewport_render.py','region_context.py','server.py','loader.py','tiffread.py','local_edits.py','restoration.py','calibration.py','batch_store.py','batch_engine.py','studio_store.py','studio_worker.py'})
+    if VERSION in ('3.1.0-rc2','3.1.0-rc3','3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0','3.1.1','3.2.0-rc1','3.2.0-rc2','3.2.0-rc3','3.2.0-rc4'):allowed.add('native_hdr_canvas.py')
+    if VERSION in ('3.1.0-rc4','3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0','3.1.1','3.2.0-rc1','3.2.0-rc2','3.2.0-rc3','3.2.0-rc4'):allowed.add('hdr_jxr.py')
+    if VERSION in ('3.1.0-rc5','3.1.0-rc6','3.1.0-rc7','3.1.0-rc8','3.1.0-rc9','3.1.0-rc10','3.1.0-rc11','3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0','3.1.1','3.2.0-rc1','3.2.0-rc2','3.2.0-rc3','3.2.0-rc4'):allowed.add('native_import_reveal.py')
+    if VERSION in ('3.1.0-rc12','3.1.0-rc13','3.1.0-rc14','3.1.0','3.1.1','3.2.0-rc1','3.2.0-rc2','3.2.0-rc3','3.2.0-rc4'):allowed.add('native_startup.py')
+    if VERSION in ('3.1.0-rc14','3.1.0','3.1.1','3.2.0-rc1','3.2.0-rc2','3.2.0-rc3','3.2.0-rc4'):allowed.add('portable_shortcut.py')
+    if VERSION in ('3.2.0-rc1','3.2.0-rc2','3.2.0-rc3','3.2.0-rc4'):allowed.add('native_hdr_workbench.py')
+    if VERSION in ('3.2.0-rc2','3.2.0-rc3','3.2.0-rc4'):allowed.add('hdr_ultrahdr.py')
+    if VERSION in ('3.2.0-rc3','3.2.0-rc4'):allowed.add('installer_upgrade.py')
+    if VERSION=='3.1.1':allowed.update({'native_hdr_workbench.py','hdr_ultrahdr.py','installer_upgrade.py'})
     assert set(changed)==allowed,changed
 report={'version':VERSION,'status':'pass','portable_file_count':len(names),'source_file_count':len(snames),'official_dependency_files_checked':len(expected_runtime),
         'checks':['all_delivery_SHA256_and_sizes','ZIP_CRC_and_safe_paths','exact_portable_manifest','source_archive_matches_workspace','app_and_docs_match_source','version_consistency','synthetic_only_app_samples','no_local_state_validation_private_photos_or_outputs','all_runtime_bytes_match_pinned_official_archives_except_documented_path_config','required_licenses','exact_final_installer_test_hash','rc13_baselines_preserved'],

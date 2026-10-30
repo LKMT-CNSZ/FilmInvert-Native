@@ -18,4 +18,4 @@
 
 运行：`runtime/python.exe -X utf8 tools/test_i18n.py`。测试使用隔离用户目录和 Qt 离屏界面；示例均为随附合成图。完整回归使用 `tools/test_compat_distribution.py` 与独立分发运行时。
 
-3.1.0-rc1 的测光、影调和 HDR 窗口也有英语绑定；线性合成的底层诊断可能以英文显示。HDR 用法见 HDR-GUIDE.md。
+3.1.1-rc1 的测光、影调和 HDR 窗口也有英语绑定；线性合成的底层诊断可能以英文显示。HDR 用法见 HDR-GUIDE.md。

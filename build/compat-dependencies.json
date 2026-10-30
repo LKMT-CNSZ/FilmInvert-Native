@@ -46,5 +46,15 @@
     "url": "https://files.pythonhosted.org/packages/2a/b6/bee97e7a2edeab72aafabb46ee5adc939790a638d107860b4cad7a20e407/shiboken6-6.12.0-cp310-abi3-win_amd64.whl",
     "sha256": "a1906cb8116869178c64b6bab52623bbc8b4ceed7b30bfc3c9aa0f6e67f6438e",
     "provenance": "https://pypi.org/pypi/shiboken6/6.12.0/json"
+  },
+  {
+    "package": "imagecodecs",
+    "version": "2026.10.10",
+    "filename": "imagecodecs-2026.10.10-cp312-abi3-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/50/66/e83fe8867a4170b12a6a2a4721cbb764fd10f5a27291dc38dd9e1c2fa898/imagecodecs-2026.10.10-cp312-abi3-win_amd64.whl",
+    "sha256": "6d02701315531283d6b6434dd871f17c1298c94be97dcd0ed590082d9a0b1f02",
+    "provenance": "https://pypi.org/project/imagecodecs/2026.10.10/",
+    "selection": "Ultra HDR JPEG only; unmodified official files",
+    "libultrahdr": "2.0.2"
   }
 ]

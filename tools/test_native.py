@@ -34,7 +34,7 @@ with tempfile.TemporaryDirectory(dir=ROOT/'build'/'tests',prefix='native-') as f
         else:raise AssertionError('Qt worker did not finish')
         assert not errors,errors
     window.open_path(str(ROOT/'samples'/'pro-light-demo.tif'));wait_idle()
-    assert window.loaded and window.tabs.count()==4
+    assert window.loaded and window.tabs.count()==5 and window.tabs.tabText(4)=='HDR'
     # The film-edge entry stays discoverable when the navigation dock is hidden,
     # including after restoring an rc7-era layout with no alignment toolbar.
     window.show();app.processEvents()

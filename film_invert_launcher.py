@@ -52,6 +52,8 @@ def diagnose():
         if report['integrity']['errors']:raise RuntimeError('Missing or modified distribution files')
         for name in ('numpy','PIL','rawpy','PySide6','shiboken6'):
             module=importlib.import_module(name);report['imports'][name]=getattr(module,'__version__','available')
+        from hdr_ultrahdr import codec
+        report['imports']['libultrahdr']=codec().ultrahdr_version()
         os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
         from PySide6.QtWidgets import QApplication
         app=QApplication.instance() or QApplication([])
